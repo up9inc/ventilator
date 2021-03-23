@@ -6,10 +6,12 @@ from ventilator.args import args
 
 
 def output(configuration):
+    """
+        Create the ventilator resources
+    """
     output_path = args.output
     output_filename = 'ventilator.yaml'
     type_input = args.type_input
-
 
     if not path.exists(output_path):
         mkdir(output_path)

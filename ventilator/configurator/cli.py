@@ -6,6 +6,9 @@ from pprint import pprint
 
 
 def CLI():
+    """
+        Using CLI
+    """
     try:
         with open(args.input, 'r') as f:
             docker_compose_file = f.read()
