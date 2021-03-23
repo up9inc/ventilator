@@ -1,0 +1,16 @@
+language: python
+branches:
+  only:
+    - main
+    - /(\d+\.?)+/
+services:
+  - docker
+install:
+  - travis_fold start "Build.Image" && docker build . -t vent && docker image ls vent && travis_fold end "Build.Image"
+script:
+  - stty cols 120
+  - travis_fold start "Run.Tests" && echo run tests here && travis_fold end "Run.Tests"
+  - travis_fold start "Integration.Tests" && pip install . && ventilator --help && travis_fold end "Integration.Tests"
+  - flake8
+after_success:
+  - codecov
