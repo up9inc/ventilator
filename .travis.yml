@@ -6,7 +6,7 @@ branches:
 services:
   - docker
 install:
-  - travis_fold start "Build.Image" && docker build . -t vent && docker image ls vent && travis_fold end "Build.Image"
+  - travis_fold start "Build.Image" && docker build . -t vent && docker run vent --help && docker image ls vent && travis_fold end "Build.Image"
 script:
   - stty cols 120
   - travis_fold start "Run.Tests" && echo run tests here && travis_fold end "Run.Tests"
