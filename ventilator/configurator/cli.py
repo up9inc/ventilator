@@ -1,9 +1,6 @@
 import yaml
-from ventilator.logging import logging
-from ventilator.args import args
+
 from ventilator.configurator.output import output
-# from ventilator.configurator.output import 
-from pprint import pprint
 
 
 def CLI():
@@ -11,10 +8,10 @@ def CLI():
         Using CLI
     """
     try:
-        with open(args.input, 'r') as f:
+        with open(args.adapter, 'r') as f:
             input_file = f.read()
     except FileNotFoundError:
-        logging.error(f"File {args.input} not found")
+        logging.error(f"File {args.adapter} not found")
         exit(1)
 
     multiple_files = False

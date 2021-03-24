@@ -1,8 +1,7 @@
-import yaml
 from os import path, mkdir
-from ventilator.constants import InputType
-from ventilator.logging import logging
-from ventilator.args import args
+
+import yaml
+
 from ventilator.configurator.check_input_type import check_input
 
 
