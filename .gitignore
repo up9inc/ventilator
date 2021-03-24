@@ -1,4 +1,4 @@
-nginx.yaml
+docker-compose-virtual.yaml
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

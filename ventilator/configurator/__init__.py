@@ -1,5 +1,3 @@
-from .cli import *
+from .cli import CLI
 from .file import *
 from .web import *
-from .output import *
-from .check_input_type import *
