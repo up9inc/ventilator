@@ -1,4 +1,7 @@
-from ventilator.configurator import *
+#!/usr/bin/ python3
+# -*- coding: utf-8 -*-
+
+from ventilator.configurator import CLI
 from ventilator.args import args
 from os import path, environ
 from ventilator.constants import *
