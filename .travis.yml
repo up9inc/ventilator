@@ -6,6 +6,7 @@ branches:
 services:
   - docker
 install:
+  - pip install -r requirements.txt
   - pip install flake8 coverage codecov
   - travis_fold start "Build.Image" && docker build . -t vent && docker run vent --help && docker image ls vent && travis_fold end "Build.Image"
 script:
