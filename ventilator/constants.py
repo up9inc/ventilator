@@ -4,6 +4,7 @@ class InputType():
 
 OUTPUT_DC_FILENAME = 'docker-compose-virtual.yaml'
 
+CONFIGFILE = 'configfile.yaml'
 MOCKINTOSH_IMAGE_TAG = 'latest'
 MOCKINTOSH_IMAGE = 'up9inc/mockintosh'
 MOCKINTOSH_IMAGE_FULL_URL = '{}:{}'.format(MOCKINTOSH_IMAGE, MOCKINTOSH_IMAGE_TAG)

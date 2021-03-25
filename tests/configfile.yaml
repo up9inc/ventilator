@@ -1,1 +1,14 @@
-{}
+default-action: 'mock'
+services:
+  front-end:
+    hostname: 'front-end'
+    action: 'include-as-is'
+    port: 80
+  catalogue:
+    hostname: 'catalogue'
+    action: 'mock'
+    port: 80
+  carts:
+    hostname: 'carts'
+    action: 'drop'
+    port: 80

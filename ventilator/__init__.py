@@ -1,7 +1,7 @@
 #!/usr/bin/ python3
 # -*- coding: utf-8 -*-
 from ventilator.configurator import CLI
-from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
+from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME, CONFIGFILE
 import logging
 import argparse
 import os
@@ -13,7 +13,6 @@ yaml.Dumper.ignore_aliases = lambda *args: True
 
 __version__ = "0.0.0"
 __location__ = path.abspath(path.dirname(__file__))
-logging = logging.getLogger(__name__)
 
 
 class Tool:
@@ -41,12 +40,13 @@ class Tool:
         pass
 
     def _configure(self):
-        self.configurator.configure()
         self.adapter.configure()
 
     def _write_output(self):
-        with open(self.output + '/{}'.format(OUTPUT_DC_FILENAME), 'w') as fp:
+        file_path = self.output + '/{}'.format(OUTPUT_DC_FILENAME)
+        with open(file_path, 'w') as fp:
             fp.write(self.adapter.output())
+            logging.info("Created file in: %s", file_path)
 
 
 class Configurator:
@@ -56,14 +56,17 @@ class Configurator:
 
 class ConfigFileConfigurator(Configurator):
 
-    def __init__(self, conf_file) -> None:
+    def __init__(self, conf_file=None) -> None:
         super().__init__()
-        self.conffile = conf_file
+        if conf_file:
+            self.conffile = conf_file
+        else:
+            self.conffile = CONFIGFILE
 
     def configure(self):
         logging.info("Reading config file: %s", self.conffile)
         with open(self.conffile) as fp:
-            fp.read()
+            self.configuration = fp.read()
 
 
 class Adapter:
@@ -94,6 +97,8 @@ class DCInput(Adapter):
         self.fname = fname
         self.file_content = None
         self.content_configured = {}
+        self.configurator = ConfigFileConfigurator()
+        self.configurator.configure()
 
     def input(self):
         logging.info("Reading the file: %s", self.fname)
@@ -110,20 +115,61 @@ class DCInput(Adapter):
         return False
 
     def configure(self):
-        for service in self.file_content['services']:
-            self.content_configured[service] = {}
-            self.content_configured[service]['hostname'] = service
-            self.content_configured[service]['name'] = service
-            self.content_configured[service]['image'] = MOCKINTOSH_SERVICE['image']
-            self.content_configured[service]['command'] = MOCKINTOSH_SERVICE['command']
-            self.content_configured[service]['ports'] = MOCKINTOSH_SERVICE['ports']
-            self.content_configured[service]['environment'] = MOCKINTOSH_SERVICE['environment']
-            self.content_configured[service]['cap_add'] = MOCKINTOSH_SERVICE['cap_add']
-            self.content_configured[service]['cap_drop'] = MOCKINTOSH_SERVICE['cap_drop']
-            self.content_configured[service]['read_only'] = MOCKINTOSH_SERVICE['read_only']
-            self.content_configured[service]['volumes'] = MOCKINTOSH_SERVICE['volumes']
+        self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
+        self.configured_default_action = self.configure_services['default-action'] \
+            if 'default-action' in self.configure_services else 'include-as-is'
+        for service_name, service_value in self.file_content['services'].items():
+
+            if service_name in self.configure_services['services']:
+                if 'action' in self.configure_services['services'][service_name]:
+                    action = self.configure_services['services'][service_name]['action']
+                    if action == 'mock':
+                        self.mock(service_name, self.configure_services['services'][service_name])
+                    elif action == 'include-as-is':
+                        self.include_as_is(service_name, service_value)
+                    elif action == 'drop':
+                        pass
+                    else:
+                        logging.error('Action not supported %s', action)
+                else:
+                    self.default_action(service_name, service_value)
+            else:
+                self.default_action(service_name, service_value)
+
+    def default_action(self, service_name, service_value):
+        if self.configured_default_action == 'mock':
+            if service_name not in self.configure_services['services']:
+                self.configure_services['services'][service_name] = {"hostname": service_name, "port": '80'}
+            self.mock(service_name, self.configure_services['services'][service_name])
+        elif self.configured_default_action == 'include-as-is':
+            self.include_as_is(service_name, service_value)
+        elif self.configured_default_action == 'drop':
+            pass
+        else:
+            logging.error('Action not supported %s', action)
+
+    def include_as_is(self, service_name, service_value):
+        self.content_configured[service_name] = service_value
+
+    def mock(self, service_name, mock_service):
+        self.content_configured[service_name] = {}
+        self.content_configured[service_name]['hostname'] = mock_service['hostname']
+        self.content_configured[service_name]['image'] = MOCKINTOSH_SERVICE['image']
+        self.content_configured[service_name]['command'] = \
+            f"{MOCKINTOSH_SERVICE['command']} http://{mock_service['hostname']}:{str(mock_service['port'])}"
+        self.content_configured[service_name]['ports'] = [mock_service['port']]
+        self.content_configured[service_name]['environment'] = \
+            [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(mock_service['port']))]
+        self.content_configured[service_name]['cap_add'] = MOCKINTOSH_SERVICE['cap_add']
+        self.content_configured[service_name]['cap_drop'] = MOCKINTOSH_SERVICE['cap_drop']
+        self.content_configured[service_name]['read_only'] = MOCKINTOSH_SERVICE['read_only']
+        self.content_configured[service_name]['volumes'] = MOCKINTOSH_SERVICE['volumes']
 
     def output(self):
+        self.content_configured = {
+            'version': '3',
+            'services':  self.content_configured
+        }
         return yaml.dump(self.content_configured)
 
 
@@ -140,9 +186,12 @@ def initiate():
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store')
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
+    parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
 
     args = parser.parse_args()
-    
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
+                        format='[%(asctime)s %(name)s %(levelname)s] %(message)s')
+    logging.debug('DEBUG enabled')
     tool = Tool(args.input)
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator.lower() == 'cli':
