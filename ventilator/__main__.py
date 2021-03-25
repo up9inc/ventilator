@@ -1,6 +1,3 @@
-import logging
-import os
-
 from ventilator import initiate
 
 if __name__ == "__main__":

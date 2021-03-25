@@ -9,8 +9,17 @@ from abc import abstractmethod
 from os import path
 import yaml
 
-yaml.Dumper.ignore_aliases = lambda *args: True
+import argparse
+import logging
+import os
+from abc import abstractmethod
+from os import path
 
+import yaml
+
+from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
+
+yaml.Dumper.ignore_aliases = lambda *args: True
 __version__ = "0.0.0"
 __location__ = path.abspath(path.dirname(__file__))
 
@@ -55,7 +64,6 @@ class Configurator:
 
 
 class ConfigFileConfigurator(Configurator):
-
     def __init__(self, conf_file=None) -> None:
         super().__init__()
         if conf_file:
@@ -86,10 +94,6 @@ class Adapter:
     def configure(self):
         pass
 
-    @abstractmethod
-    def output(self):
-        pass
-
 
 class DCInput(Adapter):
     def __init__(self, fname) -> None:
@@ -99,7 +103,7 @@ class DCInput(Adapter):
         self.content_configured = {}
         self.configurator = ConfigFileConfigurator()
         self.configurator.configure()
-
+        
     def input(self):
         logging.info("Reading the file: %s", self.fname)
         with open(self.fname, 'r') as fp:
@@ -170,12 +174,14 @@ class DCInput(Adapter):
             'version': '3',
             'services':  self.content_configured
         }
+
+    def output(self):
         return yaml.dump(self.content_configured)
 
 
 class K8SInput(Adapter):
     def input(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 def initiate():
@@ -183,11 +189,10 @@ def initiate():
 
     parser.add_argument("-c", "--configurator",
                         help="Web / CLI / File. Default: CLI", default="none", action='store')
-    parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store')
+    parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
     parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
-
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format='[%(asctime)s %(name)s %(levelname)s] %(message)s')
@@ -195,9 +200,11 @@ def initiate():
     tool = Tool(args.input)
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator.lower() == 'cli':
-        tool.configurator = CLIConfigurator()
+        # tool.configurator = CLIConfigurator()
+        raise NotImplementedError()
     elif args.configurator.lower() == 'web':
-        tool.configurator = WebConfigurator()
+        # tool.configurator = WebConfigurator()
+        raise NotImplementedError()
     elif args.configurator.lower() == 'none':
         pass  # do nothing
     else:
