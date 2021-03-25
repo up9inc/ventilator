@@ -2,7 +2,7 @@ import logging
 import os
 import unittest
 
-from ventilator import Tool, ConfigFileConfigurator, K8SInput
+from ventilator import Tool, K8SInput
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(relativeCreated)d %(name)s %(levelname)s] %(message)s')
@@ -28,7 +28,7 @@ class Tests(unittest.TestCase):
 
     def test_example(self):
         tool = Tool()
-        tool.set_dc_configurator(cdir + "/docker-compose.yml", 'configfile.yaml')
+        tool.set_dc_configurator(cdir + "/docker-compose.yml", '/configfile.yaml')
         tool.run()
 
     def test_k8s(self):

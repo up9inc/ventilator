@@ -2,6 +2,7 @@ class InputType():
     DOCKER_COMPOSE = 'docker-compose'
     KUBERNETES = 'kubernetes'
 
+
 OUTPUT_DC_FILENAME = 'docker-compose-virtual.yaml'
 MOCKINTOSH_IMAGE_TAG = 'latest'
 MOCKINTOSH_IMAGE = 'up9inc/mockintosh'
