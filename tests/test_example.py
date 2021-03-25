@@ -11,6 +11,15 @@ class K8SMockInput(K8SInput):
     def input(self):
         logging.info("K8S Mocked")
 
+    def validate_input(self):
+        pass
+
+    def configure(self):
+        pass
+
+    def output(self):
+        return "mocked"
+
 
 class Tests(unittest.TestCase):
     def test_simplest(self):

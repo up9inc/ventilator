@@ -84,7 +84,7 @@ class Adapter:
 
     @abstractmethod
     def output(self):
-        pass
+        return ""
 
 
 class DCInput(Adapter):
