@@ -31,11 +31,11 @@ class Tests(unittest.TestCase):
 
     def test_example(self):
         tool = Tool(cdir + "/docker-compose.yml")
-        tool.configurator = ConfigFileConfigurator("configfile.yaml")
+        tool.configurator = ConfigFileConfigurator(cdir + "/configfile.yaml")
         tool.run()
 
     def test_k8s(self):
         tool = Tool("kubernetes")
         tool.adapter = K8SMockInput()
-        tool.configurator = ConfigFileConfigurator("configfile.yaml")
+        tool.configurator = ConfigFileConfigurator(cdir + "/configfile.yaml")
         tool.run()
