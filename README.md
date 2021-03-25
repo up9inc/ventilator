@@ -1,10 +1,16 @@
 # Ventilator
 
 <p align="center">
-    <a href="https://github.com/up9inc/mockintosh/blob/master/LICENSE">
+    <a href="https://github.com/up9inc/ventilator/blob/master/LICENSE">
         <img alt="GitHub License" src="https://img.shields.io/github/license/up9inc/mockintosh?logo=GitHub&style=flat-square">
     </a>
-</p>
+<a href="https://travis-ci.com/github/up9inc/ventilator/builds/">
+        <img alt="Travis" src="https://img.shields.io/travis/up9inc/ventilator?logo=Travis&style=flat-square">
+    </a>
+<a href="https://codecov.io/gh/up9inc/ventilator">
+        <img alt="Code Coverage (Codecov)" src="https://img.shields.io/codecov/c/github/up9inc/ventilator?logo=Codecov&style=flat-square">
+    </a>
+</p>                                                             
 
 ## Usage
 ```bash
