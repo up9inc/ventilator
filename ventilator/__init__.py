@@ -1,7 +1,7 @@
 #!/usr/bin/ python3
 # -*- coding: utf-8 -*-
 from ventilator.configurator import CLI
-from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME, CONFIGFILE
+from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
 import logging
 import argparse
 import os
@@ -25,15 +25,19 @@ __location__ = path.abspath(path.dirname(__file__))
 
 
 class Tool:
-    def __init__(self, inp) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        if inp == 'kubernetes':
-            self.adapter = K8SInput()
-        else:
-            self.adapter = DCInput(inp)
         self.output = os.getcwd()
         self.configurator = Configurator()
         self.mock_source = None  # TODO
+        self.adapter = None
+
+    def set_k8s_configurator(self):
+        self.adapter = K8SInput()
+
+    def set_dc_configurator(self, inp, configfile_path):
+        self.configfile_path = configfile_path
+        self.adapter = DCInput(inp, configfile_path)
 
     def run(self):
         logging.info("We're starting")
@@ -66,10 +70,7 @@ class Configurator:
 class ConfigFileConfigurator(Configurator):
     def __init__(self, conf_file=None) -> None:
         super().__init__()
-        if conf_file:
-            self.conffile = conf_file
-        else:
-            self.conffile = CONFIGFILE
+        self.conffile = conf_file
 
     def configure(self):
         logging.info("Reading config file: %s", self.conffile)
@@ -96,14 +97,14 @@ class Adapter:
 
 
 class DCInput(Adapter):
-    def __init__(self, fname) -> None:
+    def __init__(self, fname, configfile_path) -> None:
         super().__init__()
         self.fname = fname
         self.file_content = None
         self.content_configured = {}
-        self.configurator = ConfigFileConfigurator()
+        self.configurator = ConfigFileConfigurator(configfile_path)
         self.configurator.configure()
-        
+
     def input(self):
         logging.info("Reading the file: %s", self.fname)
         with open(self.fname, 'r') as fp:
@@ -121,7 +122,7 @@ class DCInput(Adapter):
     def configure(self):
         self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
         self.configured_default_action = self.configure_services['default-action'] \
-            if 'default-action' in self.configure_services else 'include-as-is'
+            if 'default-action' in self.configure_services else 'keep'
         for service_name, service_value in self.file_content['services'].items():
 
             if service_name in self.configure_services['services']:
@@ -129,12 +130,13 @@ class DCInput(Adapter):
                     action = self.configure_services['services'][service_name]['action']
                     if action == 'mock':
                         self.mock(service_name, self.configure_services['services'][service_name])
-                    elif action == 'include-as-is':
+                    elif action == 'keep':
                         self.include_as_is(service_name, service_value)
                     elif action == 'drop':
                         pass
                     else:
                         logging.error('Action not supported %s', action)
+                        exit(1)
                 else:
                     self.default_action(service_name, service_value)
             else:
@@ -145,12 +147,13 @@ class DCInput(Adapter):
             if service_name not in self.configure_services['services']:
                 self.configure_services['services'][service_name] = {"hostname": service_name, "port": '80'}
             self.mock(service_name, self.configure_services['services'][service_name])
-        elif self.configured_default_action == 'include-as-is':
+        elif self.configured_default_action == 'keep':
             self.include_as_is(service_name, service_value)
         elif self.configured_default_action == 'drop':
             pass
         else:
-            logging.error('Action not supported %s', action)
+            logging.error('Action not supported %s', self.configured_default_action)
+            exit(1)
 
     def include_as_is(self, service_name, service_value):
         self.content_configured[service_name] = service_value
@@ -172,7 +175,7 @@ class DCInput(Adapter):
     def output(self):
         self.content_configured = {
             'version': '3',
-            'services':  self.content_configured
+            'services': self.content_configured
         }
 
     def output(self):
@@ -188,7 +191,9 @@ def initiate():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
-                        help="Web / CLI / File. Default: CLI", default="none", action='store')
+                        help="web / cli / file. Default: CLI", default="none", action='store')
+    parser.add_argument("-f", "--configurator_file",
+                        help="The path of the configurator file.", default="none", action='store')
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
@@ -197,7 +202,7 @@ def initiate():
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format='[%(asctime)s %(name)s %(levelname)s] %(message)s')
     logging.debug('DEBUG enabled')
-    tool = Tool(args.input)
+    tool = Tool()
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator.lower() == 'cli':
         # tool.configurator = CLIConfigurator()
@@ -208,7 +213,10 @@ def initiate():
     elif args.configurator.lower() == 'none':
         pass  # do nothing
     else:
-        tool.configurator = ConfigFileConfigurator(args.configurator)
+        if args.configurator_file == 'none':
+            logging.error('On FILE configurator you should pass -f <path_of_the_configuration_file>')
+            exit(1)
+        tool.set_dc_configurator(args.input, args.configurator_file)
     try:
         tool.run()
     except KeyboardInterrupt:

@@ -1,10 +1,10 @@
 default-action: 'mock'
 services:
   front-end:
-    action: 'include-as-is'
+    action: 'keep'
   catalogue:
     hostname: 'catalogue'
-    action: 'mock'
+    action: 'mocky'
     port: 80
   carts:
     hostname: 'carts'
