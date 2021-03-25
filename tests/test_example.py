@@ -28,7 +28,7 @@ class Tests(unittest.TestCase):
 
     def test_example(self):
         tool = Tool()
-        tool.set_dc_configurator(cdir + "/docker-compose.yml", '/configfile.yaml')
+        tool.set_dc_configurator(cdir + "/docker-compose.yml", cdir + '/configfile.yaml')
         tool.run()
 
     def test_k8s(self):
