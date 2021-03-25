@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 cdir = os.path.dirname(__file__)
 
+
 class K8SMockInput(K8SInput):
     def input(self):
         logging.info("K8S Mocked")
