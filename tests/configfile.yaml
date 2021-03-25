@@ -1,1 +1,10 @@
-{}
+{
+  "services": {
+    "edge-router": {
+      "action": "keep" # skip / mock
+        "mock-name": "service-edge"
+        "port": 8080
+    }
+  }
+
+}

@@ -1,13 +1,14 @@
 #!/usr/bin/ python3
 # -*- coding: utf-8 -*-
-from ventilator.configurator import CLI
-from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
-import logging
 import argparse
+import logging
 import os
 from abc import abstractmethod
 from os import path
+
 import yaml
+
+from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
@@ -45,7 +46,9 @@ class Tool:
         self.adapter.configure()
 
     def _write_output(self):
-        with open(self.output + '/{}'.format(OUTPUT_DC_FILENAME), 'w') as fp:
+        fname = self.output + '/{}'.format(OUTPUT_DC_FILENAME)
+        logging.info("Writing resulting config into file: %s", fname)
+        with open(fname, 'w') as fp:
             fp.write(self.adapter.output())
 
 
@@ -69,10 +72,6 @@ class ConfigFileConfigurator(Configurator):
 class Adapter:
     @abstractmethod
     def input(self):
-        pass
-
-    @abstractmethod
-    def output(self):
         pass
 
     @abstractmethod
@@ -129,7 +128,7 @@ class DCInput(Adapter):
 
 class K8SInput(Adapter):
     def input(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 def initiate():
@@ -137,18 +136,20 @@ def initiate():
 
     parser.add_argument("-c", "--configurator",
                         help="Web / CLI / File. Default: CLI", default="none", action='store')
-    parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store')
+    parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
 
     args = parser.parse_args()
-    
+
     tool = Tool(args.input)
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator.lower() == 'cli':
-        tool.configurator = CLIConfigurator()
+        # tool.configurator = CLIConfigurator()
+        raise NotImplementedError()
     elif args.configurator.lower() == 'web':
-        tool.configurator = WebConfigurator()
+        # tool.configurator = WebConfigurator()
+        raise NotImplementedError()
     elif args.configurator.lower() == 'none':
         pass  # do nothing
     else:
