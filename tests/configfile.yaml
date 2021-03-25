@@ -4,7 +4,7 @@ services:
     action: 'keep'
   catalogue:
     hostname: 'catalogue'
-    action: 'mocky'
+    action: 'mock'
     port: 80
   carts:
     hostname: 'carts'

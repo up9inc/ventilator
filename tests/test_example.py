@@ -25,17 +25,14 @@ class K8SMockInput(K8SInput):
 
 
 class Tests(unittest.TestCase):
-    def test_simplest(self):
-        tool = Tool(cdir + "/docker-compose.yml")
-        tool.run()
 
     def test_example(self):
-        tool = Tool(cdir + "/docker-compose.yml")
-        tool.configurator = ConfigFileConfigurator(cdir + "/configfile.yaml")
+        tool = Tool()
+        tool.set_dc_configurator(cdir + "/docker-compose.yml", 'configfile.yaml')
         tool.run()
 
     def test_k8s(self):
-        tool = Tool("kubernetes")
+        tool = Tool()
         tool.adapter = K8SMockInput()
-        tool.configurator = ConfigFileConfigurator(cdir + "/configfile.yaml")
+        # tool.configurator = ConfigFileConfigurator(cdir + "/configfile.yaml")
         tool.run()

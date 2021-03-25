@@ -1,6 +1,5 @@
 #!/usr/bin/ python3
 # -*- coding: utf-8 -*-
-from ventilator.configurator import CLI
 from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
 import logging
 import argparse
