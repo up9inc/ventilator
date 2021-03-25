@@ -8,16 +8,6 @@ from abc import abstractmethod
 from os import path
 import yaml
 
-import argparse
-import logging
-import os
-from abc import abstractmethod
-from os import path
-
-import yaml
-
-from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
-
 yaml.Dumper.ignore_aliases = lambda *args: True
 __version__ = "0.0.0"
 __location__ = path.abspath(path.dirname(__file__))
@@ -176,8 +166,6 @@ class DCInput(Adapter):
             'version': '3',
             'services': self.content_configured
         }
-
-    def output(self):
         return yaml.dump(self.content_configured)
 
 
