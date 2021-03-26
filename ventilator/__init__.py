@@ -1,6 +1,7 @@
 #!/usr/bin/ python3
 # -*- coding: utf-8 -*-
 from ventilator.constants import MOCKINTOSH_SERVICE, OUTPUT_DC_FILENAME
+from ventilator.mock import EmptyMock, EmptyMockintoshMock
 import logging
 import argparse
 import os
@@ -18,6 +19,7 @@ class Tool:
         super().__init__()
         self.output = os.getcwd()
         self.configurator = Configurator()
+        self.mock = EmptyMock()
         self.mock_source = None  # TODO
         self.adapter = None
 
@@ -31,15 +33,20 @@ class Tool:
     def run(self):
         logging.info("We're starting")
         self._read_input()
-        self._read_mock_input()
         self._configure()
+        self._read_mock_input()
         self._write_output()
 
     def _read_input(self):
         self.adapter.input()
 
-    def _read_mock_input(self):
-        pass
+    def _read_mock_input(self, mockfile=None):
+        if mockfile:
+            pass
+        else:
+            # TODO Identify Mock Source
+            self.mock = EmptyMockintoshMock()
+            self.mock.mock(self.adapter.configurator.configuration, self.adapter.file_content, self.output)
 
     def _configure(self):
         self.adapter.configure()
@@ -48,8 +55,7 @@ class Tool:
         file_path = self.output + '/{}'.format(OUTPUT_DC_FILENAME)
         with open(file_path, 'w') as fp:
             fp.write(self.adapter.output())
-            logging.info("Created file in: %s", file_path)
-
+            logging.info(f"Created {self.adapter.type} file in: %s", file_path)
 
 class Configurator:
     def configure(self):
@@ -86,6 +92,8 @@ class Adapter:
 
 
 class DCInput(Adapter):
+    type = 'docker-compose'
+
     def __init__(self, fname, configfile_path) -> None:
         super().__init__()
         self.fname = fname
@@ -151,22 +159,17 @@ class DCInput(Adapter):
         self.content_configured[service_name] = {}
         if 'hostname' in mock_service:
             self.content_configured[service_name]['hostname'] = mock_service['hostname']
-            self.content_configured[service_name]['command'] = \
-                f"{MOCKINTOSH_SERVICE['command']} http://{mock_service['hostname']}"
         elif 'hostname' in service_value:
             self.content_configured[service_name]['hostname'] = service_value['hostname']
-            self.content_configured[service_name]['command'] = \
-                f"{MOCKINTOSH_SERVICE['command']} http://{service_value['hostname']}"
         if 'port' in mock_service:
             self.content_configured[service_name]['ports'] = [mock_service['port']]
-            self.content_configured[service_name]['command'] += ':{}'.format(mock_service['port'])
             self.content_configured[service_name]['environment'] = \
                 [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(mock_service['port']))]
         elif 'ports' in service_value:
             self.content_configured[service_name]['ports'] = service_value['ports']
-            self.content_configured[service_name]['command'] += ':{}'.format(service_value['port'][0])
             self.content_configured[service_name]['environment'] = \
                 [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(service_value['ports'][0]))]
+        self.content_configured[service_name]['command'] = MOCKINTOSH_SERVICE['command']
         self.content_configured[service_name]['image'] = MOCKINTOSH_SERVICE['image']
         self.content_configured[service_name]['cap_add'] = MOCKINTOSH_SERVICE['cap_add']
         self.content_configured[service_name]['cap_drop'] = MOCKINTOSH_SERVICE['cap_drop']
@@ -192,7 +195,8 @@ def initiate():
     parser.add_argument("-c", "--configurator",
                         help="web / cli / file. Default: CLI", required=True, default="none", action='store')
     parser.add_argument("-f", "--configurator_file",
-                        help="The path of the configurator file.", default="none", action='store')
+                        help="The path of the configurator file. REQUIRED if configurator is file", default="none",
+                        action='store')
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
@@ -213,7 +217,7 @@ def initiate():
         pass  # do nothing
     else:
         if args.configurator_file == 'none':
-            logging.error('On FILE configurator you should pass -f <path_of_the_configuration_file>')
+            logging.error('On FILE configurator it is required -f <path_of_the_configuration_file>')
             exit(1)
         tool.set_dc_configurator(args.input, args.configurator_file)
     try:
