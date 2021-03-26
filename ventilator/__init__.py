@@ -178,7 +178,7 @@ def initiate():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
-                        help="web / cli / file. Default: CLI", default="none", action='store')
+                        help="web / cli / file. Default: CLI", required=True ,default="none", action='store')
     parser.add_argument("-f", "--configurator_file",
                         help="The path of the configurator file.", default="none", action='store')
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
