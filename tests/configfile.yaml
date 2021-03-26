@@ -1,12 +1,8 @@
 default-action: 'mock'
 services:
   front-end:
-    action: 'keep'
-  catalogue:
-    hostname: 'catalogue'
     action: 'mock'
-    port: 80
+  catalogue:
+    action: 'mock'
   carts:
-    hostname: 'carts'
     action: 'drop'
-    port: 80

@@ -118,7 +118,7 @@ class DCInput(Adapter):
                 if 'action' in self.configure_services['services'][service_name]:
                     action = self.configure_services['services'][service_name]['action']
                     if action == 'mock':
-                        self.mock(service_name, self.configure_services['services'][service_name])
+                        self.mock(service_name, service_value, self.configure_services['services'][service_name])
                     elif action == 'keep':
                         self.include_as_is(service_name, service_value)
                     elif action == 'drop':
@@ -135,7 +135,7 @@ class DCInput(Adapter):
         if self.configured_default_action == 'mock':
             if service_name not in self.configure_services['services']:
                 self.configure_services['services'][service_name] = {"hostname": service_name, "port": '80'}
-            self.mock(service_name, self.configure_services['services'][service_name])
+            self.mock(service_name, service_value, self.configure_services['services'][service_name])
         elif self.configured_default_action == 'keep':
             self.include_as_is(service_name, service_value)
         elif self.configured_default_action == 'drop':
@@ -147,15 +147,27 @@ class DCInput(Adapter):
     def include_as_is(self, service_name, service_value):
         self.content_configured[service_name] = service_value
 
-    def mock(self, service_name, mock_service):
+    def mock(self, service_name, service_value, mock_service):
         self.content_configured[service_name] = {}
-        self.content_configured[service_name]['hostname'] = mock_service['hostname']
+        if 'hostname' in mock_service:
+            self.content_configured[service_name]['hostname'] = mock_service['hostname']
+            self.content_configured[service_name]['command'] = \
+                f"{MOCKINTOSH_SERVICE['command']} http://{mock_service['hostname']}"
+        elif 'hostname' in service_value:
+            self.content_configured[service_name]['hostname'] = service_value['hostname']
+            self.content_configured[service_name]['command'] = \
+                f"{MOCKINTOSH_SERVICE['command']} http://{service_value['hostname']}"
+        if 'port' in mock_service:
+            self.content_configured[service_name]['ports'] = [mock_service['port']]
+            self.content_configured[service_name]['command'] += ':{}'.format(mock_service['port'])
+            self.content_configured[service_name]['environment'] = \
+                [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(mock_service['port']))]
+        elif 'ports' in service_value:
+            self.content_configured[service_name]['ports'] = service_value['ports']
+            self.content_configured[service_name]['command'] += ':{}'.format(service_value['port'][0])
+            self.content_configured[service_name]['environment'] = \
+                [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(service_value['ports'][0]))]
         self.content_configured[service_name]['image'] = MOCKINTOSH_SERVICE['image']
-        self.content_configured[service_name]['command'] = \
-            f"{MOCKINTOSH_SERVICE['command']} http://{mock_service['hostname']}:{str(mock_service['port'])}"
-        self.content_configured[service_name]['ports'] = [mock_service['port']]
-        self.content_configured[service_name]['environment'] = \
-            [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(mock_service['port']))]
         self.content_configured[service_name]['cap_add'] = MOCKINTOSH_SERVICE['cap_add']
         self.content_configured[service_name]['cap_drop'] = MOCKINTOSH_SERVICE['cap_drop']
         self.content_configured[service_name]['read_only'] = MOCKINTOSH_SERVICE['read_only']
@@ -178,7 +190,7 @@ def initiate():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
-                        help="web / cli / file. Default: CLI", required=True ,default="none", action='store')
+                        help="web / cli / file. Default: CLI", required=True, default="none", action='store')
     parser.add_argument("-f", "--configurator_file",
                         help="The path of the configurator file.", default="none", action='store')
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
