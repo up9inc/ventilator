@@ -1,4 +1,4 @@
-default-action: 'keep'
+default-action: 'drop'
 services:
   front-end:
     action: 'keep'

@@ -38,10 +38,12 @@ class EmptyMockintoshMock(EmptyMock):
         if self.default_action == 'mock':
             for service_name, service_value in services['services'].items():
                 if service_name in self.configfile_content_loaded['services']:
-                    configfile_service_name_action = self.configfile_content_loaded['services'][service_name]['action']
-                    if configfile_service_name_action != 'keep' and configfile_service_name_action != 'drop':
-                        self._mock_service(service_name, current_port)
-                        current_port += 1
+                    if self.configfile_content_loaded['services'][service_name] is not None:
+                        configfile_service_action = self.configfile_content_loaded['services'][service_name][
+                            'action']
+                        if configfile_service_action != 'keep' and configfile_service_action != 'drop':
+                            self._mock_service(service_name, current_port)
+                            current_port += 1
                 else:
                     self._mock_service(service_name, current_port)
                     current_port += 1

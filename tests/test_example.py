@@ -48,27 +48,28 @@ class Tests(unittest.TestCase):
     def test_configfile_default_action(self):
         tool_keep = Tool()
         tool_keep.set_k8s_configurator(None, configfile_path=cdir + "/configfile-default-action-keep.yaml")
-        tool_keep.mock_source = 'Something'
         tool_keep.run()
         tool_mock = Tool()
         tool_mock.set_k8s_configurator(None, configfile_path=cdir + "/configfile-default-action-mock.yaml")
-        tool_mock.mock_source = 'Something'
         tool_mock.run()
         tool_drop = Tool()
         tool_drop.set_k8s_configurator(None, configfile_path=cdir + "/configfile-default-action-drop.yaml")
-        tool_drop.mock_source = 'Something'
         tool_drop.run()
 
     def test_configfile_default_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(cdir + "/docker-compose.yml",
                                  configfile_path=cdir + "/configfile-default-action-not-supported.yaml")
-        tool.mock_source = 'Something'
         tool.run()
 
     def test_configfile_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(cdir + "/docker-compose.yml",
                                  configfile_path=cdir + "/configfile-action-not-supported.yaml")
-        tool.mock_source = 'Something'
+        tool.run()
+
+    def test_empty_input_file(self):
+        tool = Tool()
+        tool.set_dc_configurator(cdir + "/docker-compose.yml",
+                                 configfile_path=cdir + "/configfile-action-not-supported.yaml")
         tool.run()

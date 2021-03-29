@@ -11,4 +11,3 @@ services:
   user-db:
     action: 'drop'
   orders-db:
-    action: 'drop'

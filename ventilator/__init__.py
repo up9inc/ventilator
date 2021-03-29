@@ -139,7 +139,8 @@ class DCInput(Adapter):
         for service_name, service_value in self.file_content['services'].items():
 
             if service_name in self.configure_services['services']:
-                if 'action' in self.configure_services['services'][service_name]:
+                self.configure_services['services'][service_name]
+                try:
                     action = self.configure_services['services'][service_name]['action']
                     if action == 'mock':
                         self.mock(service_name, service_value, self.configure_services['services'][service_name])
@@ -150,8 +151,8 @@ class DCInput(Adapter):
                     else:
                         logging.error('Action not supported %s', action)
                         return
-                else:
-                    logging.error('Action is required in configfile')
+                except TypeError as e:
+                    logging.error('Action is required in configfile <%s>', service_name)
                     return
             else:
                 self.default_action(service_name, service_value)
@@ -175,14 +176,14 @@ class DCInput(Adapter):
             self.content_configured[service_name]['hostname'] = mock_service['hostname']
         elif 'hostname' in service_value:
             self.content_configured[service_name]['hostname'] = service_value['hostname']
+        if 'ports' in service_value:
+            self.content_configured[service_name]['ports'] = service_value['ports']
+            self.content_configured[service_name]['environment'] = \
+                [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(service_value['ports'][0]))]
         if 'port' in mock_service:
             self.content_configured[service_name]['ports'] = [mock_service['port']]
             self.content_configured[service_name]['environment'] = \
                 [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(mock_service['port']))]
-        elif 'ports' in service_value:
-            self.content_configured[service_name]['ports'] = service_value['ports']
-            self.content_configured[service_name]['environment'] = \
-                [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(service_value['ports'][0]))]
         self.content_configured[service_name]['command'] = MOCKINTOSH_SERVICE['command']
         self.content_configured[service_name]['image'] = MOCKINTOSH_SERVICE['image']
         self.content_configured[service_name]['cap_add'] = MOCKINTOSH_SERVICE['cap_add']
@@ -213,8 +214,9 @@ class K8SInput(Adapter):
         self.configurator.configure()
 
     def input(self):
-        self.validated = self.validate_input
-        return
+        #TODO
+        self.validated = self.validate_input()
+        return self.validated
 
     def output(self):
         return 'Mock'
