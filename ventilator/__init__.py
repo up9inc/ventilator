@@ -22,7 +22,7 @@ class Tool:
         self.mock = EmptyMock()
         self.configfile_path = None
         self.mock_source = None  # TODO
-        self.adapter = None
+        self.adapter = Adapter()
 
     def set_k8s_configurator(self, inp=None, configfile_path=None):
         self.configfile_path = configfile_path
@@ -42,13 +42,14 @@ class Tool:
     def _read_input(self):
         self.adapter.input()
 
-    def _read_mock_input(self, mockfile=None):
-        if mockfile:
-            pass
+    def _read_mock_input(self):
+        if self.mock_source:
+            logging.info('Mockintosh file passed')
         else:
             # TODO Identify Mock Source
-            self.mock = EmptyMockintoshMock()
-            self.mock.mock(self.adapter.configurator.configuration, self.adapter.file_content, self.output)
+            if self.adapter.type != 'empty':
+                self.mock = EmptyMockintoshMock()
+                self.mock.mock(self.adapter.configurator.configuration, self.adapter.file_content, self.output)
 
     def _configure(self):
         self.adapter.configure()
@@ -61,6 +62,8 @@ class Tool:
 
 
 class Configurator:
+    configuration = None
+
     def configure(self):
         logging.debug("Empty configuration")
 
@@ -78,21 +81,25 @@ class ConfigFileConfigurator(Configurator):
 
 
 class Adapter:
+    type = 'empty'
+    configurator = Configurator()
+    file_content = 'Empty Adapter'
+
     @abstractmethod
     def input(self):
-        return
+        pass
 
     @abstractmethod
     def output(self):
-        return
+        return self.file_content
 
     @abstractmethod
     def validate_input(self):
-        return
+        pass
 
     @abstractmethod
     def configure(self):
-        return
+        pass
 
 
 class DCInput(Adapter):
@@ -134,7 +141,7 @@ class DCInput(Adapter):
                     if action == 'mock':
                         self.mock(service_name, service_value, self.configure_services['services'][service_name])
                     elif action == 'keep':
-                        self.include_as_is(service_name, service_value)
+                        self.keep(service_name, service_value)
                     elif action == 'drop':
                         pass
                     else:
@@ -151,14 +158,14 @@ class DCInput(Adapter):
                 self.configure_services['services'][service_name] = {"hostname": service_name, "port": '80'}
             self.mock(service_name, service_value, self.configure_services['services'][service_name])
         elif self.configured_default_action == 'keep':
-            self.include_as_is(service_name, service_value)
+            self.keep(service_name, service_value)
         elif self.configured_default_action == 'drop':
             pass
         else:
             logging.error('Action not supported %s', self.configured_default_action)
             exit(1)
 
-    def include_as_is(self, service_name, service_value):
+    def keep(self, service_name, service_value):
         self.content_configured[service_name] = service_value
 
     def mock(self, service_name, service_value, mock_service):
@@ -225,6 +232,7 @@ def initiate():
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
+    parser.add_argument("-mf", "--mock_source_file", help="Mock Source File", action='store', default="none")
     parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
@@ -244,6 +252,8 @@ def initiate():
         if args.configurator_file == 'none':
             logging.error('On FILE configurator it is required -f <path_of_the_configuration_file>')
             exit(1)
+        if args.mock_source_file != 'none':
+            tool.mock_source = args.mock_source_file
         tool.set_dc_configurator(args.input, args.configurator_file)
     try:
         tool.run()

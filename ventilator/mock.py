@@ -14,7 +14,7 @@ class EmptyMock:
 
     def mock(self):
         logging.info('Empty Mock')
-        return True
+        return None
 
 
 class EmptyMockintoshMock(EmptyMock):

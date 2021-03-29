@@ -35,3 +35,12 @@ class Tests(unittest.TestCase):
         tool = Tool()
         tool.set_k8s_configurator(None, configfile_path=cdir + "/configfile.yaml")
         tool.run()
+
+    def test_empty_mock(self):
+        tool = Tool()
+        tool.mock.mock()
+
+    def test_empty_adapter(self):
+        tool = Tool()
+        tool.run()
+        
