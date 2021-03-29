@@ -124,9 +124,9 @@ class DCInput(Adapter):
             exit(1)
 
     def validate_input(self):
-        if 'version' in self.file_content and 'services' in self.file_content and len(
-                self.file_content['services']) > 0:
-            return True
+        if 'version' in self.file_content and 'services' in self.file_content:
+            if self.file_content['services'] is not None and len(self.file_content['services']) > 0:
+                return True
         return False
 
     def configure(self):
