@@ -26,6 +26,14 @@ class K8SMockInput(K8SInput):
 
 class Tests(unittest.TestCase):
 
+    def test_empty_mock(self):
+        tool = Tool()
+        tool.mock.mock()
+
+    def test_empty_adapter(self):
+        tool = Tool()
+        tool.run()
+
     def test_example(self):
         tool = Tool()
         tool.set_dc_configurator(cdir + "/docker-compose.yml", cdir + '/configfile.yaml')
@@ -34,12 +42,4 @@ class Tests(unittest.TestCase):
     def test_k8s(self):
         tool = Tool()
         tool.set_k8s_configurator(None, configfile_path=cdir + "/configfile.yaml")
-        tool.run()
-
-    def test_empty_mock(self):
-        tool = Tool()
-        tool.mock.mock()
-
-    def test_empty_adapter(self):
-        tool = Tool()
         tool.run()
