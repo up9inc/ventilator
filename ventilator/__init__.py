@@ -20,6 +20,7 @@ class Tool:
         self.output = os.getcwd()
         self.configurator = Configurator()
         self.mock = EmptyMock()
+        self.configfile_path = None
         self.mock_source = None  # TODO
         self.adapter = None
 
@@ -67,6 +68,7 @@ class Configurator:
 class ConfigFileConfigurator(Configurator):
     def __init__(self, conf_file=None) -> None:
         super().__init__()
+        self.configuration = None
         self.conffile = conf_file
 
     def configure(self):
@@ -78,19 +80,19 @@ class ConfigFileConfigurator(Configurator):
 class Adapter:
     @abstractmethod
     def input(self):
-        pass
+        return
 
     @abstractmethod
     def output(self):
-        pass
+        return
 
     @abstractmethod
     def validate_input(self):
-        pass
+        return
 
     @abstractmethod
     def configure(self):
-        pass
+        return
 
 
 class DCInput(Adapter):
@@ -100,7 +102,9 @@ class DCInput(Adapter):
         super().__init__()
         self.fname = fname
         self.file_content = None
+        self.configure_services = None
         self.content_configured = {}
+        self.configured_default_action = 'keep'
         self.configurator = ConfigFileConfigurator(configfile_path)
         self.configurator.configure()
 
@@ -121,7 +125,7 @@ class DCInput(Adapter):
     def configure(self):
         self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
         self.configured_default_action = self.configure_services['default-action'] \
-            if 'default-action' in self.configure_services else 'keep'
+            if 'default-action' in self.configure_services else self.configured_default_action
         for service_name, service_value in self.file_content['services'].items():
 
             if service_name in self.configure_services['services']:
@@ -189,6 +193,9 @@ class DCInput(Adapter):
 class K8SInput(Adapter):
     type = 'kubernetes'
 
+    def validate_input(self):
+        return
+
     def __init__(self, fname, configfile_path):
         super().__init__()
         self.fname = fname
@@ -199,7 +206,6 @@ class K8SInput(Adapter):
 
     def input(self):
         return
-        # raise NotImplementedError()
 
     def output(self):
         return 'Mock'

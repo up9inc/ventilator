@@ -14,19 +14,22 @@ class EmptyMock:
 
     def mock(self):
         logging.info('Empty Mock')
+        return True
 
 
 class EmptyMockintoshMock(EmptyMock):
     def __init__(self):
         super().__init__()
         self.default_action = 'keep'
+        self.configfile_content_loaded = None
         self.mockintosh_data = {'services': None}
         logging.info("Using empty mockintosh mock")
 
     def mock(self, configfile_content, services, output):
         if services is None or len(services) == 0:
             logging.error('Input file empty')
-            return
+            return False
+
         self.configfile_content_loaded = yaml.load(configfile_content, Loader=yaml.Loader)
         self.default_action = self.configfile_content_loaded.get('default-action',
                                                                  self.default_action)
@@ -51,14 +54,11 @@ class EmptyMockintoshMock(EmptyMock):
         with open(output + '/mockintosh.yml', 'w') as fp:
             yaml.dump(self.mockintosh_data, fp)
             logging.info("Created mockintosh config file in: %s/%s", output, 'mockintosh.yml')
+        return None
 
     def _mock_service(self, service_name, current_port):
         self.mockintosh_data['services'].append({
             'name': service_name,
             'port': current_port
         })
-
-
-class Mock:
-    def __init__(self):
-        super().__init__()
+        return None
