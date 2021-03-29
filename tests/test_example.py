@@ -43,4 +43,3 @@ class Tests(unittest.TestCase):
     def test_empty_adapter(self):
         tool = Tool()
         tool.run()
-        
