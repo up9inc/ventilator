@@ -186,7 +186,11 @@ class DCInput(Adapter):
 
 
 class K8SInput(Adapter):
-    configurator = None
+
+    def __init__(self):
+        self.configurator = ConfigFileConfigurator(configfile_path)
+        self.configurator.configure()
+
     def input(self):
         raise NotImplementedError()
 
