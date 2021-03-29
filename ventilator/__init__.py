@@ -137,7 +137,6 @@ class DCInput(Adapter):
             logging.error('Action not supported %s', self.configured_default_action)
             return
         for service_name, service_value in self.file_content['services'].items():
-
             if service_name in self.configure_services['services']:
                 try:
                     action = self.configure_services['services'][service_name]['action']
@@ -154,8 +153,6 @@ class DCInput(Adapter):
                 except TypeError:
                     logging.error('Action is required in configfile <%s>', service_name)
                     return
-                except Exception as e:
-                    logging.error(e)
             else:
                 self.default_action(service_name, service_value)
 
