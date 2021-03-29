@@ -1,11 +1,11 @@
-default-action: 'mocky'
+default-action: 'mock'
 services:
   front-end:
     action: 'keep'
   catalogue:
     action: 'mock'
   carts-db:
-    action: 'drop'
+    action: 'dropy'
   catalogue-db:
     action: 'drop'
   user-db:

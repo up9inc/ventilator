@@ -151,7 +151,8 @@ class DCInput(Adapter):
                         logging.error('Action not supported %s', action)
                         return
                 else:
-                    self.default_action(service_name, service_value)
+                    logging.error('Action is required in configfile')
+                    return
             else:
                 self.default_action(service_name, service_value)
 
@@ -164,9 +165,6 @@ class DCInput(Adapter):
             self.keep(service_name, service_value)
         elif self.configured_default_action == 'drop':
             pass
-        else:
-            logging.error('Action not supported %s', self.configured_default_action)
-            exit(1)
 
     def keep(self, service_name, service_value):
         self.content_configured[service_name] = service_value
@@ -215,6 +213,7 @@ class K8SInput(Adapter):
         self.configurator.configure()
 
     def input(self):
+        this.validated = self.validate_input
         return
 
     def output(self):
