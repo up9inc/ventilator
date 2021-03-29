@@ -139,9 +139,9 @@ class DCInput(Adapter):
         for service_name, service_value in self.file_content['services'].items():
 
             if service_name in self.configure_services['services']:
-                self.configure_services['services'][service_name]
                 try:
                     action = self.configure_services['services'][service_name]['action']
+                    print(action)
                     if action == 'mock':
                         self.mock(service_name, service_value, self.configure_services['services'][service_name])
                     elif action == 'keep':
@@ -154,6 +154,8 @@ class DCInput(Adapter):
                 except TypeError:
                     logging.error('Action is required in configfile <%s>', service_name)
                     return
+                except Exception as e:
+                    logging.error(e)
             else:
                 self.default_action(service_name, service_value)
 
