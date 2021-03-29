@@ -133,6 +133,9 @@ class DCInput(Adapter):
         self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
         self.configured_default_action = self.configure_services['default-action'] \
             if 'default-action' in self.configure_services else self.configured_default_action
+        if self.configured_default_action not in ['keep', 'mock', 'drop']:
+            logging.error('Action not supported %s', self.configured_default_action)
+            return
         for service_name, service_value in self.file_content['services'].items():
 
             if service_name in self.configure_services['services']:
@@ -146,7 +149,7 @@ class DCInput(Adapter):
                         pass
                     else:
                         logging.error('Action not supported %s', action)
-                        exit(1)
+                        return
                 else:
                     self.default_action(service_name, service_value)
             else:
