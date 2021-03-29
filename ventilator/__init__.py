@@ -186,6 +186,7 @@ class DCInput(Adapter):
 
 
 class K8SInput(Adapter):
+    configurator = None
     def input(self):
         raise NotImplementedError()
 
