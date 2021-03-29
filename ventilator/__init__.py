@@ -121,7 +121,7 @@ class DCInput(Adapter):
             self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
         if not self.validate_input():
             logging.error("The input file: %s is not in a good format", self.fname)
-            exit(1)
+            return
 
     def validate_input(self):
         if 'version' in self.file_content and 'services' in self.file_content:
@@ -130,6 +130,8 @@ class DCInput(Adapter):
         return False
 
     def configure(self):
+        if not self.validate_input():
+            return
         self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
         self.configured_default_action = self.configure_services['default-action'] \
             if 'default-action' in self.configure_services else self.configured_default_action

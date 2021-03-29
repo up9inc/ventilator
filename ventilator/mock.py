@@ -26,7 +26,8 @@ class EmptyMockintoshMock(EmptyMock):
         logging.info("Using empty mockintosh mock")
 
     def mock(self, configfile_content, services, output):
-        if services is None or len(services) == 0:
+        print(services)
+        if services is None or len(services) == 0 or services['services'] is None:
             logging.error('Input file empty')
             return False
 
