@@ -57,6 +57,7 @@ class Tool:
             fp.write(self.adapter.output())
             logging.info(f"Created {self.adapter.type} file in: %s", file_path)
 
+
 class Configurator:
     def configure(self):
         logging.debug("Empty configuration")

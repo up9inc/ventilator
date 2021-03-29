@@ -45,7 +45,7 @@ class EmptyMockintoshMock(EmptyMock):
                         and self.configfile_content_loaded['services'][service_name]['action'] == 'mock':
                     self._mock_service(service_name, current_port)
                     current_port += 1
-        with open(output+'/mockintosh.yml', 'w') as fp:
+        with open(output + '/mockintosh.yml', 'w') as fp:
             yaml.dump(self.mockintosh_data, fp)
             logging.info("Created mockintosh config file in: %s/%s", output, 'mockintosh.yml')
 
