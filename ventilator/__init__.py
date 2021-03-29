@@ -213,7 +213,7 @@ class K8SInput(Adapter):
         self.configurator.configure()
 
     def input(self):
-        this.validated = self.validate_input
+        self.validated = self.validate_input
         return
 
     def output(self):
