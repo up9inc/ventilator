@@ -42,4 +42,17 @@ class Tests(unittest.TestCase):
     def test_k8s(self):
         tool = Tool()
         tool.set_k8s_configurator(None, configfile_path=cdir + "/configfile.yaml")
+        tool.mock_source = 'Something'
+        tool.run()
+
+    def test_configfile_default_action(self):
+        tool = Tool()
+        tool.set_k8s_configurator(None, configfile_path=cdir + "/configfile-default-action-keep.yaml")
+        tool.mock_source = 'Something'
+        tool.run()
+
+    def test_configfile_default_action_not_supported(self):
+        tool = Tool()
+        tool.set_k8s_configurator(None, configfile_path=cdir + "/configfile-default-action-not-supported.yaml")
+        tool.mock_source = 'Something'
         tool.run()
