@@ -48,15 +48,15 @@ class Tests(unittest.TestCase):
     def test_configfile_default_action(self):
         tool_keep = Tool()
         tool_keep.set_dc_configurator(cdir + "/docker-compose.yml",
-                                       configfile_path=cdir + "/configfile-default-action-keep.yaml")
+                                      configfile_path=cdir + "/configfile-default-action-keep.yaml")
         tool_keep.run()
         tool_mock = Tool()
         tool_mock.set_dc_configurator(cdir + "/docker-compose.yml",
-                                       configfile_path=cdir + "/configfile-default-action-mock.yaml")
+                                      configfile_path=cdir + "/configfile-default-action-mock.yaml")
         tool_mock.run()
         tool_drop = Tool()
         tool_drop.set_dc_configurator(cdir + "/docker-compose.yml",
-                                       configfile_path=cdir + "/configfile-default-action-drop.yaml")
+                                      configfile_path=cdir + "/configfile-default-action-drop.yaml")
         tool_drop.run()
 
     # def test_configfile_default_action_not_supported(self):
