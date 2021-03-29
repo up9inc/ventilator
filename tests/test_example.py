@@ -33,6 +33,6 @@ class Tests(unittest.TestCase):
 
     def test_k8s(self):
         tool = Tool()
-        tool.adapter = K8SMockInput()
+        tool.set_k8s_configurator(configfile_path=cdir + "/configfile.yaml")
         # tool.configurator = ConfigFileConfigurator(cdir + "/configfile.yaml")
         tool.run()
