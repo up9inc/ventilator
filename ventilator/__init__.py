@@ -151,7 +151,7 @@ class DCInput(Adapter):
                     else:
                         logging.error('Action not supported %s', action)
                         return
-                except TypeError as e:
+                except TypeError:
                     logging.error('Action is required in configfile <%s>', service_name)
                     return
             else:
@@ -214,7 +214,6 @@ class K8SInput(Adapter):
         self.configurator.configure()
 
     def input(self):
-        #TODO
         self.validated = self.validate_input()
         return self.validated
 
