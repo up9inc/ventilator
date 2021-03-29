@@ -24,6 +24,9 @@ class EmptyMockintoshMock(EmptyMock):
         logging.info("Using empty mockintosh mock")
 
     def mock(self, configfile_content, services, output):
+        if services is None or len(services) == 0:
+            logging.error('Input file empty')
+            exit(0)
         self.configfile_content_loaded = yaml.load(configfile_content, Loader=yaml.Loader)
         self.default_action = self.configfile_content_loaded.get('default-action',
                                                                  self.default_action)

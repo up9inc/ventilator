@@ -46,6 +46,7 @@ class Tool:
             pass
         else:
             # TODO Identify Mock Source
+            self.adapter.mock()
             self.mock = EmptyMockintoshMock()
             self.mock.mock(self.adapter.configurator.configuration, self.adapter.file_content, self.output)
 
