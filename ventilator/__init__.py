@@ -23,8 +23,9 @@ class Tool:
         self.mock_source = None  # TODO
         self.adapter = None
 
-    def set_k8s_configurator(self):
-        self.adapter = K8SInput()
+    def set_k8s_configurator(self, inp=None, configfile_path=None):
+        self.configfile_path = configfile_path
+        self.adapter = K8SInput(inp, configfile_path)
 
     def set_dc_configurator(self, inp, configfile_path):
         self.configfile_path = configfile_path
@@ -186,8 +187,13 @@ class DCInput(Adapter):
 
 
 class K8SInput(Adapter):
+    type = 'kubernetes'
 
-    def __init__(self):
+    def __init__(self, fname, configfile_path):
+        self.configurasuper().__init__()
+        self.fname = fname
+        self.file_content = None
+        self.content_configured = {}
         self.configurator = ConfigFileConfigurator(configfile_path)
         self.configurator.configure()
 
