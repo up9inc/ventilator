@@ -198,7 +198,14 @@ class K8SInput(Adapter):
         self.configurator.configure()
 
     def input(self):
-        raise NotImplementedError()
+        return
+        # raise NotImplementedError()
+
+    def output(self):
+        return 'Mock'
+
+    def configure(self):
+        return
 
 
 def initiate():
