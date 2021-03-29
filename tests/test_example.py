@@ -73,6 +73,6 @@ class Tests(unittest.TestCase):
 
     def test_empty_input_file(self):
         tool = Tool()
-        tool.set_dc_configurator(cdir + "/docker-compose.yml",
+        tool.set_dc_configurator(cdir + "/empty-input-file.yaml",
                                  configfile_path=cdir + "/configfile-action-not-supported.yaml")
         tool.run()
