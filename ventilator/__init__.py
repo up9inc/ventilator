@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 from ventilator.constants import OUTPUT_DC_FILENAME
 from ventilator.mock import EmptyMock, EmptyMockintoshMock, Mock
-from ventilator.configurator import Configurator, ConfigFileConfigurator
+from ventilator.configurator import Configurator
 from ventilator.adapter import Adapter, K8SInput, DCInput
 import logging
 import argparse
 import os
-from abc import abstractmethod
 from os import path
 import yaml
 

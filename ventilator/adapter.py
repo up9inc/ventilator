@@ -4,7 +4,6 @@ from abc import abstractmethod
 
 from ventilator.configurator import Configurator, ConfigFileConfigurator
 from ventilator.constants import MOCKINTOSH_SERVICE
-from ventilator.mock import Mock
 
 logging = logging.getLogger(__name__)
 
