@@ -1,6 +1,7 @@
 import logging
 import yaml
-from os import path
+from os import path, stat
+from ventilator.exceptions import InvalidMockintoshFile
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 logging.getLogger(__name__)
@@ -25,10 +26,13 @@ class EmptyMockintoshMock(EmptyMock):
         self.mockintosh_data = {'services': None}
         logging.info("Using empty mockintosh mock")
 
-    def mock(self, configfile_content, services, output):
+    def mock(self, adapter_type, configfile_content, services, output):
+        if adapter_type == 'docker-compose':
+            self._mock_dc(configfile_content, services, output)
+
+    def _mock_dc(self, configfile_content, services, output):
         if services is None or len(services) == 0 or services['services'] is None:
-            logging.error('Input file is empty')
-            return False
+            raise DockerComposeNotInAGoodFormat()
 
         self.configfile_content_loaded = yaml.load(configfile_content, Loader=yaml.Loader)
         self.default_action = self.configfile_content_loaded.get('default-action',
@@ -57,13 +61,11 @@ class EmptyMockintoshMock(EmptyMock):
             yaml.dump(self.mockintosh_data, fp)
             logging.info("Created mockintosh config file in: %s/%s", output, 'mockintosh.yml')
         return None
-
-    def _mock_service(self, service_name, current_port):
+    def _mock_service(self, service_name, current_port) -> None:
         self.mockintosh_data['services'].append({
             'name': service_name,
             'port': current_port
         })
-        return None
 
 
 class Mock:
@@ -79,11 +81,9 @@ class Mock:
             with open(self.file_path, 'r') as fp:
                 self.file_content = fp.read()
         except FileNotFoundError:
-            logging.error('File not found: %s', self.file_path)
-            exit(1)
+            raise FileNotFoundError(self.file_path)
         if len(self.file_content) <= 0:
-            logging.error('Empty mock file on %s', self.file_path)
-            return
+            raise BaseException(f"Empty mock file: {self.file_path}")
         self.file_content_loaded = yaml.load(self.file_content, Loader=yaml.Loader)
         if self.file_content_loaded.get('management', False):
             if self.file_content_loaded.get('services', False):
@@ -91,10 +91,9 @@ class Mock:
                     return 'mockintosh'
                 return False
             else:
-                logging.error('Services not defined in Mockintosh file')
-                return
+                raise InvalidMockintoshFile()
         else:
-            logging.error('Management field not defined in Mockintosh file')
+            raise InvalidMockintoshFile()
 
     def mock(self, **kwargs):
         type_input = kwargs['type_input']

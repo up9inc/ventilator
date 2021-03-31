@@ -4,6 +4,8 @@ import unittest
 
 from tests.util import dc_dir, conf_dir
 from ventilator import Tool, K8SInput
+from ventilator.exceptions import ActionNotSupported, DockerComposeNotInAGoodFormat
+from ventilator.exceptions import InvalidMockintoshFile, InvalidConfigfileDefinition
 
 cdir = os.path.dirname(__file__)
 
@@ -35,7 +37,7 @@ class Tests(unittest.TestCase):
     def test_example(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile.yaml')
-        tool.run()
+        self.assertRaises(InvalidConfigfileDefinition, tool.run)
 
     def test_k8s(self):
         tool = Tool()
@@ -60,16 +62,16 @@ class Tests(unittest.TestCase):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml",
                                  configfile_path=conf_dir + "/configfile-default-action-not-supported.yaml")
-        tool.run()
+        self.assertRaises(ActionNotSupported, tool.run)
 
     def test_configfile_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml",
                                  configfile_path=conf_dir + "/configfile-action-not-supported.yaml")
-        tool.run()
+        self.assertRaises(ActionNotSupported, tool.run)
 
     def test_empty_input_file(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/empty-input-file.yaml",
                                  configfile_path=conf_dir + "/configfile-action-not-supported.yaml")
-        tool.run()
+        self.assertRaises(DockerComposeNotInAGoodFormat, tool.run)

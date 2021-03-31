@@ -4,6 +4,7 @@ from abc import abstractmethod
 
 from ventilator.configurator import Configurator, ConfigFileConfigurator
 from ventilator.constants import MOCKINTOSH_SERVICE
+from ventilator.exceptions import DockerComposeNotInAGoodFormat, ActionNotSupported, InvalidConfigfileDefinition
 
 logging = logging.getLogger(__name__)
 
@@ -44,31 +45,31 @@ class DCInput(Adapter):
         self.configurator.configure()
         self.mock = None
         self.mock_source = None
-        self.valid = True
 
     def input(self):
         logging.info("Reading the file: %s", self.fname)
-        with open(self.fname, 'r') as fp:
-            self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
-        if not self.validate_input():
-            logging.error("The input file: %s is not in a good format", self.fname)
-            return
+        try:
+            with open(self.fname, 'r') as fp:
+                self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
+        except yaml.scanner.ScannerError:
+            raise
 
     def validate_input(self):
-        if 'version' in self.file_content and 'services' in self.file_content:
-            if self.file_content['services'] is not None and len(self.file_content['services']) > 0:
-                return True
-        return False
+        try:
+            if 'version' in self.file_content and 'services' in self.file_content:
+                if self.file_content['services'] is not None:
+                    return True
+            raise DockerComposeNotInAGoodFormat()
+        except Exception:
+            raise DockerComposeNotInAGoodFormat()
 
     def configure(self):
-        if not self.validate_input():
-            return
+        self.validate_input()
         self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
         self.configured_default_action = self.configure_services['default-action'] \
             if 'default-action' in self.configure_services else self.configured_default_action
         if self.configured_default_action not in ['keep', 'mock', 'drop']:
-            logging.error('Action not supported %s', self.configured_default_action)
-            return
+            raise ActionNotSupported(self.configured_default_action)
         for service_name, service_value in self.file_content['services'].items():
             if service_name in self.configure_services['services']:
                 try:
@@ -80,12 +81,9 @@ class DCInput(Adapter):
                     elif action == 'drop':
                         pass
                     else:
-                        logging.error('Action not supported %s', action)
-                        return
+                        raise ActionNotSupported(action)
                 except TypeError:
-                    self.valid = False
-                    logging.error('Action is required in configfile <%s>', service_name)
-                    return
+                    raise InvalidConfigfileDefinition()
             else:
                 self.default_action(service_name, service_value)
 
@@ -146,7 +144,6 @@ class K8SInput(Adapter):
 
     def __init__(self, fname, configfile_path):
         super().__init__()
-        self.valid = True
         self.fname = fname
         self.file_content = None
         self.content_configured = {}

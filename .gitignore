@@ -1,3 +1,8 @@
+output/
+tests/mockintosh.yml
+mockintosh.yml
+target_services_mocks.json
+mock-data
 docker-compose-virtual.yaml
 /tests-outputs
 # Byte-compiled / optimized / DLL files

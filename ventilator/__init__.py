@@ -57,9 +57,9 @@ class Tool:
                                    configfile_content=self.adapter.configurator.configuration)
         else:
             # TODO Identify Mock Source
-            if self.adapter.type != 'empty' and self.adapter.valid:
+            if self.adapter.type != 'empty':
                 self.mock = EmptyMockintoshMock()
-                self.mock.mock(self.adapter.configurator.configuration, self.adapter.file_content, self.output)
+                self.mock.mock(self.adapter.type, self.adapter.configurator.configuration, self.adapter.file_content, self.output)
 
     def _configure(self):
         self.adapter.configure()
