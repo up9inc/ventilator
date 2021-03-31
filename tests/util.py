@@ -7,6 +7,9 @@ import tempfile
 import time
 
 is_debug = 'pydevd' in sys.modules and not os.getenv("CI", False) or os.environ.get('DEBUG', "")
+exp_dir = os.path.dirname(__file__) + "/expected"
+dc_dir = os.path.dirname(__file__) + "/docker-compose"
+conf_dir = os.path.dirname(__file__) + "/configs"
 
 
 def fake_output():
