@@ -48,7 +48,7 @@ class Tool:
         self.adapter.input()
 
     def _read_mock_input(self):
-        if self.mock_source:
+        if self.mock_source is not None:
             logging.info('Mockintosh file passed: %s', self.mock_source)
             self.adapter.mock = Mock(self.mock_source)
             self.adapter.mock.mock(type_input=self.adapter.type,
@@ -56,7 +56,7 @@ class Tool:
                                    configfile_content=self.adapter.configurator.configuration)
         else:
             # TODO Identify Mock Source
-            if self.adapter.type != 'empty':
+            if self.adapter.type != 'empty' and self.adapter.valid:
                 self.mock = EmptyMockintoshMock()
                 self.mock.mock(self.adapter.configurator.configuration, self.adapter.file_content, self.output)
 

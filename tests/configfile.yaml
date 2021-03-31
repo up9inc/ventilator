@@ -1,4 +1,4 @@
-default-action: 'mock'
+default-action: 'drop'
 services:
   front-end:
     action: 'keep'

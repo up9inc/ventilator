@@ -45,6 +45,7 @@ class DCInput(Adapter):
         self.configurator.configure()
         self.mock = None
         self.mock_source = None
+        self.valid = True
 
     def input(self):
         logging.info("Reading the file: %s", self.fname)
@@ -83,6 +84,7 @@ class DCInput(Adapter):
                         logging.error('Action not supported %s', action)
                         return
                 except TypeError:
+                    self.valid = False
                     logging.error('Action is required in configfile <%s>', service_name)
                     return
             else:
@@ -135,7 +137,6 @@ class DCInput(Adapter):
             content_configured['services'] = self.mock.mocked_content
 
             return yaml.dump(content_configured)
-
 
 
 class K8SInput(Adapter):
