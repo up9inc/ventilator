@@ -26,9 +26,8 @@ class EmptyMockintoshMock(EmptyMock):
         logging.info("Using empty mockintosh mock")
 
     def mock(self, configfile_content, services, output):
-        print(services)
         if services is None or len(services) == 0 or services['services'] is None:
-            logging.error('Input file empty')
+            logging.error('Input file is empty')
             return False
 
         self.configfile_content_loaded = yaml.load(configfile_content, Loader=yaml.Loader)
@@ -65,3 +64,77 @@ class EmptyMockintoshMock(EmptyMock):
             'port': current_port
         })
         return None
+
+
+class Mock:
+    def __init__(self, file_path):
+        super().__init__()
+        self.file_path = file_path
+        self.file_content = None
+        self.file_content_loaded = None
+        self._identify_mock_source()
+
+    def _identify_mock_source(self):
+        try:
+            with open(self.file_path, 'r') as fp:
+                self.file_content = fp.read()
+        except FileNotFoundError:
+            logging.error('File not found: %s', self.file_path)
+            exit(1)
+        if len(self.file_content) <= 0:
+            logging.error('Empty mock file on %s', self.file_path)
+            return
+        self.file_content_loaded = yaml.load(self.file_content, Loader=yaml.Loader)
+        if self.file_content_loaded.get('management', False):
+            if self.file_content_loaded.get('services', False):
+                if len(self.file_content_loaded['services']) > 0:
+                    return 'mockintosh'
+                return False
+            else:
+                logging.error('Services not defined in Mockintosh file')
+                return
+        else:
+            logging.error('Management field not defined in Mockintosh file')
+
+    def mock(self, **kwargs):
+        type_input = kwargs['type_input']
+        if type_input == 'docker-compose':
+            self._mock_dc(**kwargs)
+        # TODO other cases
+
+    def _update_command_dc(self, mocked_input_content, service_name):
+        smaller_match = None
+        updated = False
+        for mock_service in self.file_content_loaded['services']:
+            if service_name in mock_service['name']:
+                if not updated:
+                    smaller_match = mock_service['name']
+                    updated = True
+                if len(smaller_match) > len(mock_service['name']):
+                    smaller_match = mock_service['name']
+        if smaller_match is not None:
+            mocked_input_content[service_name]['command'] = \
+                f"{mocked_input_content[service_name]['command']} {smaller_match}"
+        return mocked_input_content
+
+    def _mock_dc(self, **kwargs):
+        mocked_input_content = kwargs['mocked_input_content']
+        configfile_content = yaml.load(kwargs['configfile_content'], Loader=yaml.Loader)
+        for service_name, service_value in mocked_input_content.items():
+            if service_name in configfile_content['services']:
+                if 'action' in configfile_content['services'][service_name] and \
+                        configfile_content['services'][service_name][
+                            'action'] == 'mock':
+                    mocked_input_content = self._update_command_dc(mocked_input_content, service_name)
+                elif service_name not in configfile_content \
+                        and configfile_content['default-action'] == 'mock':
+                    if 'action' in configfile_content['services'][service_name]:
+                        if configfile_content['services'][service_name]['action'] == 'mock':
+                            mocked_input_content = self._update_command_dc(mocked_input_content, service_name)
+                    else:
+                        mocked_input_content = self._update_command_dc(mocked_input_content, service_name)
+            else:
+                default_action = configfile_content.get('default-action', None)
+                if default_action == 'mock':
+                    mocked_input_content = self._update_command_dc(mocked_input_content, service_name)
+        self.mocked_content = mocked_input_content
