@@ -4,9 +4,6 @@ import unittest
 
 from ventilator import Tool, K8SInput
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(relativeCreated)d %(name)s %(levelname)s] %(message)s')
-
 cdir = os.path.dirname(__file__)
 
 

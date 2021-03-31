@@ -1,14 +1,16 @@
 #!/usr/bin/ python3
 # -*- coding: utf-8 -*-
-from ventilator.constants import OUTPUT_DC_FILENAME
-from ventilator.mock import EmptyMock, EmptyMockintoshMock, Mock
-from ventilator.configurator import Configurator
-from ventilator.adapter import Adapter, K8SInput, DCInput
-import logging
 import argparse
+import logging
 import os
 from os import path
+
 import yaml
+
+from ventilator.adapter import Adapter, K8SInput, DCInput
+from ventilator.configurator import Configurator
+from ventilator.constants import OUTPUT_DC_FILENAME
+from ventilator.mock import EmptyMock, EmptyMockintoshMock, Mock
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 __version__ = "0.0.0"
@@ -73,7 +75,7 @@ def initiate():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
-                        help="web / cli / file. Default: CLI", required=True, default="none", action='store')
+                        help="web / cli / file / none. Default: none", required=True, default="none", action='store')
     parser.add_argument("-f", "--configurator_file",
                         help="The path of the configurator file. REQUIRED if configurator is file", default="none",
                         action='store')
@@ -83,9 +85,20 @@ def initiate():
     parser.add_argument("-mf", "--mock_source_file", help="Mock Source File", action='store', default="none")
     parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
     args = parser.parse_args()
+
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format='[%(asctime)s %(name)s %(levelname)s] %(message)s')
     logging.debug('DEBUG enabled')
+
+    tool = get_tool_from_args(args)
+
+    try:
+        tool.run()
+    except KeyboardInterrupt:
+        logging.debug("Normal shutdown")
+
+
+def get_tool_from_args(args):
     tool = Tool()
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator.lower() == 'cli':
@@ -103,7 +116,4 @@ def initiate():
         if args.mock_source_file != 'none':
             tool.mock_source = args.mock_source_file
         tool.set_dc_configurator(args.input, args.configurator_file)
-    try:
-        tool.run()
-    except KeyboardInterrupt:
-        logging.debug("Normal shutdown")
+    return tool
