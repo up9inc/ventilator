@@ -147,6 +147,7 @@ class K8SInput(Adapter):
 
     def __init__(self, fname, configfile_path):
         super().__init__()
+        self.valid = True
         self.fname = fname
         self.file_content = None
         self.content_configured = {}
