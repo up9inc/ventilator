@@ -1,5 +1,3 @@
-configfile.yaml
-mockintosh.yml
 docker-compose-virtual.yaml
 /tests-outputs
 # Byte-compiled / optimized / DLL files
