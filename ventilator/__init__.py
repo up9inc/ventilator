@@ -101,7 +101,9 @@ def initiate():
 def get_tool_from_args(args):
     tool = Tool()
     tool.output = args.output if args.output else os.getcwd()
-    if args.configurator.lower() == 'cli':
+    if args.configurator is None:
+        pass  # do nothing
+    elif args.configurator.lower() == 'cli':
         # tool.configurator = CLIConfigurator()
         raise NotImplementedError()
     elif args.configurator.lower() == 'web':
