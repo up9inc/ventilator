@@ -111,8 +111,7 @@ def get_tool_from_args(args):
         pass  # do nothing
     else:
         if args.configurator_file is None:
-            logging.error('On FILE configurator it is required -f <path_of_the_configuration_file>')
-            exit(1)
+            raise BaseException('On FILE configurator it is required -f <path_of_the_configuration_file>')
         if args.mock_source_file != 'none':
             tool.mock_source = args.mock_source_file
         tool.set_dc_configurator(args.input, args.configurator_file)
