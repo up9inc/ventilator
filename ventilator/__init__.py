@@ -75,14 +75,14 @@ def initiate():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
-                        help="web / cli / file / none. Default: none", required=True, default="none", action='store')
+                        help="web / cli / file / none. Default: none", required=True, default=None, action='store')
     parser.add_argument("-f", "--configurator_file",
-                        help="The path of the configurator file. REQUIRED if configurator is file", default="none",
+                        help="The path of the configurator file. REQUIRED if configurator is file", default=None,
                         action='store')
     parser.add_argument("-i", "--input", help="docker-compose / kubernetes file.", action='store', required=True)
     parser.add_argument("-o", "--output", help="Ventilator Output Path. Default: current directory",
                         default="", action='store')
-    parser.add_argument("-mf", "--mock_source_file", help="Mock Source File", action='store', default="none")
+    parser.add_argument("-mf", "--mock_source_file", help="Mock Source File", action='store', default=None)
     parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
     args = parser.parse_args()
 
@@ -107,10 +107,10 @@ def get_tool_from_args(args):
     elif args.configurator.lower() == 'web':
         # tool.configurator = WebConfigurator()
         raise NotImplementedError()
-    elif args.configurator.lower() == 'none':
+    elif args.configurator is None :
         pass  # do nothing
     else:
-        if args.configurator_file == 'none':
+        if args.configurator_file is None:
             logging.error('On FILE configurator it is required -f <path_of_the_configuration_file>')
             exit(1)
         if args.mock_source_file != 'none':
