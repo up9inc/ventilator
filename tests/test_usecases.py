@@ -7,13 +7,19 @@ from ventilator import get_tool_from_args
 FakeArgs = namedtuple("FakeCLIArgs", ["output", "configurator", "input", "configurator_file", "mock_source_file"])
 
 
+# Variations:
+# input - dc, k8s
+# config - none, file, cli, web
+# mock - none, file, up9
+# output - specified or not
+
 class Tests(unittest.TestCase):
     def test_no_args(self):
         args = FakeArgs(fake_output(), "none", None, None, None)
         with self.assertRaises(BaseException):
             get_tool_from_args(args)
 
-    def test_dc_confnone(self):
+    def test_dc_confnone_mocknone(self):
         args = FakeArgs(fake_output(), "none", dc_dir + "/docker-compose.yml", None, None)
         tool = get_tool_from_args(args)
         tool.run()
