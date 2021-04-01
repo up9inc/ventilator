@@ -107,7 +107,7 @@ def get_tool_from_args(args):
     elif args.configurator.lower() == 'web':
         # tool.configurator = WebConfigurator()
         raise NotImplementedError()
-    elif args.configurator is None :
+    elif args.configurator is None:
         pass  # do nothing
     else:
         if args.configurator_file is None:
