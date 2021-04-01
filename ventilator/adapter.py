@@ -4,15 +4,13 @@ from abc import abstractmethod
 
 from ventilator.configurator import Configurator, ConfigFileConfigurator
 from ventilator.constants import MOCKINTOSH_SERVICE
-from ventilator.exceptions import DockerComposeNotInAGoodFormat, ActionNotSupported, InvalidConfigfileDefinition
+from ventilator.exceptions import DockerComposeNotInAGoodFormat, ActionNotSupported
+from ventilator.exceptions import InvalidConfigfileDefinitionAction, InvalidConfigfileDefinition
 
 logging = logging.getLogger(__name__)
 
 
 class Adapter:
-    type = 'empty'
-    configurator = Configurator()
-    file_content = 'Empty Adapter'
 
     @abstractmethod
     def input(self):
@@ -20,13 +18,40 @@ class Adapter:
 
     @abstractmethod
     def output(self):
-        return self.file_content
+        pass
 
     @abstractmethod
     def validate_input(self):
         pass
 
     @abstractmethod
+    def configure(self):
+        pass
+
+
+class EmptyAdapter(Adapter):
+    type = 'empty'
+    configurator = Configurator()
+    file_content = ''
+
+    def __init__(self, fname):
+        super().__init__()
+        self.fname = fname
+
+    def input(self):
+        logging.info("Reading the file: %s", self.fname)
+        try:
+            with open(self.fname, 'r') as fp:
+                self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
+        except yaml.scanner.ScannerError:
+            raise
+
+    def output(self):
+        return yaml.dump(self.file_content)
+
+    def validate_input(self):
+        pass
+
     def configure(self):
         pass
 
@@ -71,8 +96,8 @@ class DCInput(Adapter):
         if self.configured_default_action not in ['keep', 'mock', 'drop']:
             raise ActionNotSupported(self.configured_default_action)
         for service_name, service_value in self.file_content['services'].items():
-            if service_name in self.configure_services['services']:
-                try:
+            try:
+                if service_name in self.configure_services['services']:
                     action = self.configure_services['services'][service_name]['action']
                     if action == 'mock':
                         self.action_mock(service_name, service_value, self.configure_services['services'][service_name])
@@ -82,10 +107,12 @@ class DCInput(Adapter):
                         pass
                     else:
                         raise ActionNotSupported(action)
-                except TypeError:
-                    raise InvalidConfigfileDefinition()
-            else:
-                self.default_action(service_name, service_value)
+                else:
+                    self.default_action(service_name, service_value)
+            except TypeError:
+                raise InvalidConfigfileDefinitionAction()
+            except KeyError:
+                raise InvalidConfigfileDefinition()
 
     def default_action(self, service_name, service_value):
         if self.configured_default_action == 'mock':

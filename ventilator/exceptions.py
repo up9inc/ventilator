@@ -25,13 +25,22 @@ class ActionNotSupported(Exception):
         super().__init__(f"Action {cause} not supported. Maybe a typo?")
 
 
-class InvalidConfigfileDefinition(Exception):
+class InvalidConfigfileDefinitionAction(Exception):
     """
         Raised in case of user not pass an action attribute in a service field.
     """
 
     def __init__(self):
         super().__init__("Action is required in configfile")
+
+
+class InvalidConfigfileDefinition(Exception):
+    """
+        Raised in case of user not pass an action attribute in a service field.
+    """
+
+    def __init__(self):
+        super().__init__("Invalid configfile")
 
 
 class InvalidMockintoshFile(Exception):

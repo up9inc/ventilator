@@ -14,7 +14,6 @@ class EmptyMock:
         super().__init__()
 
     def mock(self):
-        logging.info('Empty Mock')
         return None
 
 

@@ -7,7 +7,7 @@ from os import path
 
 import yaml
 
-from ventilator.adapter import Adapter, K8SInput, DCInput
+from ventilator.adapter import Adapter, EmptyAdapter, K8SInput, DCInput
 from ventilator.configurator import Configurator
 from ventilator.constants import OUTPUT_DC_FILENAME
 from ventilator.mock import EmptyMock, EmptyMockintoshMock, Mock
@@ -25,7 +25,7 @@ class Tool:
         self.mock = EmptyMock()
         self.configfile_path = None
         self.mock_source = None  # TODO
-        self.adapter = Adapter()
+        self.adapter = None
 
     def set_k8s_configurator(self, inp=None, configfile_path=None):
         self.configfile_path = configfile_path
@@ -40,15 +40,22 @@ class Tool:
 
     def run(self):
         logging.info("We're starting")
+        if not hasattr(self.adapter, 'input') and not hasattr(self, 'input'):
+            logging.info("Empty input, doing nothing...")
+            return
         self._read_input()
         self._configure()
         self._read_mock_input()
         self._write_output()
 
     def _read_input(self):
+        if self.adapter is None:
+            self.adapter = EmptyAdapter(self.input)
         self.adapter.input()
 
     def _read_mock_input(self):
+        if isinstance(self.adapter, EmptyAdapter):
+            return
         if self.mock_source is not None:
             logging.info('Mockintosh file passed: %s', self.mock_source)
             self.adapter.mock = Mock(self.mock_source)
@@ -59,7 +66,8 @@ class Tool:
             # TODO Identify Mock Source
             if self.adapter.type != 'empty':
                 self.mock = EmptyMockintoshMock()
-                self.mock.mock(self.adapter.type, self.adapter.configurator.configuration, self.adapter.file_content, self.output)
+                self.mock.mock(self.adapter.type, self.adapter.configurator.configuration, self.adapter.file_content,
+                               self.output)
 
     def _configure(self):
         self.adapter.configure()
@@ -75,7 +83,7 @@ def initiate():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
-                        help="web / cli / file / none. Default: none", required=True, default=None, action='store')
+                        help="web / cli / file / none. Default: none", required=False, default=None, action='store')
     parser.add_argument("-f", "--configurator_file",
                         help="The path of the configurator file. REQUIRED if configurator is file", default=None,
                         action='store')
@@ -101,14 +109,14 @@ def initiate():
 def get_tool_from_args(args):
     tool = Tool()
     tool.output = args.output if args.output else os.getcwd()
-    if args.configurator.lower() == 'cli':
+    if args.configurator is None:
+        tool.input = args.input
+    elif args.configurator.lower() == 'cli':
         # tool.configurator = CLIConfigurator()
         raise NotImplementedError()
     elif args.configurator.lower() == 'web':
         # tool.configurator = WebConfigurator()
         raise NotImplementedError()
-    elif args.configurator is None:
-        pass  # do nothing
     else:
         if args.configurator_file is None:
             raise BaseException('On FILE configurator it is required -f <path_of_the_configuration_file>')
