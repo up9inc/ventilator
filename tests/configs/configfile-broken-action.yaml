@@ -1,0 +1,13 @@
+default-action: 'drop'
+services:
+  front-end:
+  catalogue:
+    action: 'mock'
+  carts-db:
+    action: 'drop'
+  catalogue-db:
+    action: 'drop'
+  user-db:
+    action: 'drop'
+  orders-db:
+    action: 'drop'
