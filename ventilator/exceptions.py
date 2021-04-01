@@ -31,7 +31,7 @@ class InvalidConfigfileDefinition(Exception):
     """
 
     def __init__(self):
-        super().__init__(f"Action is required in configfile")
+        super().__init__("Action is required in configfile")
 
 
 class InvalidMockintoshFile(Exception):

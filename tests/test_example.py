@@ -5,7 +5,7 @@ import unittest
 from tests.util import dc_dir, conf_dir
 from ventilator import Tool, K8SInput
 from ventilator.exceptions import ActionNotSupported, DockerComposeNotInAGoodFormat
-from ventilator.exceptions import InvalidMockintoshFile, InvalidConfigfileDefinition
+from ventilator.exceptions import InvalidConfigfileDefinition
 
 cdir = os.path.dirname(__file__)
 

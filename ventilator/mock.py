@@ -1,7 +1,7 @@
 import logging
 import yaml
-from os import path, stat
-from ventilator.exceptions import InvalidMockintoshFile
+from os import path
+from ventilator.exceptions import InvalidMockintoshFile, DockerComposeNotInAGoodFormat
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 logging.getLogger(__name__)
@@ -61,6 +61,7 @@ class EmptyMockintoshMock(EmptyMock):
             yaml.dump(self.mockintosh_data, fp)
             logging.info("Created mockintosh config file in: %s/%s", output, 'mockintosh.yml')
         return None
+
     def _mock_service(self, service_name, current_port) -> None:
         self.mockintosh_data['services'].append({
             'name': service_name,
