@@ -1,0 +1,6 @@
+default-action: 'drop'
+services:
+  front-end:
+    action: 'keep'
+  catalogue:
+    action: 'mock'
