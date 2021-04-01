@@ -14,7 +14,7 @@ class Tests(unittest.TestCase):
             get_tool_from_args(args)
 
     def test_dc_confnone(self):
-        args = FakeArgs(fake_output(), "none", dc_dir + "/docker-compose.yml", None, None)
+        args = FakeArgs(fake_output(), None, dc_dir + "/docker-compose.yml", None, None)
         tool = get_tool_from_args(args)
         tool.run()
         assert_files_equal(exp_dir + "/dc_confnone.yaml",
