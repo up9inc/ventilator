@@ -111,6 +111,7 @@ def get_tool_from_args(args):
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator is None:
         tool.input = args.input
+        pass  # do nothing
     elif args.configurator.lower() == 'cli':
         # tool.configurator = CLIConfigurator()
         raise NotImplementedError()
