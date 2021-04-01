@@ -5,7 +5,7 @@ import unittest
 from tests.util import dc_dir, conf_dir
 from ventilator import Tool, K8SInput
 from ventilator.exceptions import ActionNotSupported, DockerComposeNotInAGoodFormat
-from ventilator.exceptions import InvalidMockintoshFile, InvalidConfigfileDefinition
+from ventilator.exceptions import InvalidConfigfileDefinition, InvalidConfigfileDefinitionAction
 
 cdir = os.path.dirname(__file__)
 
@@ -37,12 +37,23 @@ class Tests(unittest.TestCase):
     def test_example(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile.yaml')
+        tool.run()
+
+    def test_example_broken_configfile(self):
+        tool = Tool()
+        tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile-broken.yaml')
         self.assertRaises(InvalidConfigfileDefinition, tool.run)
 
+    def test_example_broken_configfile_action(self):
+        tool = Tool()
+        tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile-broken-action.yaml')
+        self.assertRaises(InvalidConfigfileDefinitionAction, tool.run)
+        
     def test_k8s(self):
         tool = Tool()
         tool.set_k8s_configurator(None, configfile_path=conf_dir + "/configfile.yaml")
         tool.run()
+
 
     def test_configfile_default_action(self):
         tool_keep = Tool()
@@ -58,17 +69,20 @@ class Tests(unittest.TestCase):
                                       configfile_path=conf_dir + "/configfile-default-action-drop.yaml")
         tool_drop.run()
 
+
     def test_configfile_default_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml",
                                  configfile_path=conf_dir + "/configfile-default-action-not-supported.yaml")
         self.assertRaises(ActionNotSupported, tool.run)
 
+
     def test_configfile_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml",
                                  configfile_path=conf_dir + "/configfile-action-not-supported.yaml")
         self.assertRaises(ActionNotSupported, tool.run)
+
 
     def test_empty_input_file(self):
         tool = Tool()

@@ -1,5 +1,5 @@
 default-action: 'drop'
-services:
+serviices:
   front-end:
     action: 'keep'
   catalogue:

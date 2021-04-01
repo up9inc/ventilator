@@ -13,7 +13,7 @@ install:
 script:
   - stty cols 120
   - travis_fold start "Run.Tests" && coverage run -m pytest -v --log-level=DEBUG tests && travis_fold end "Run.Tests"
-  - travis_fold start "Integration.Tests" && pip install . && ventilator --help && ventilator -c file -f tests/configfile.yaml -i tests/docker-compose.yml && travis_fold end "Integration.Tests"
+  - travis_fold start "Integration.Tests" && pip install . && ventilator --help && ventilator -c file -f tests/configs/configfile.yaml -i tests/docker-compose/docker-compose.yml && travis_fold end "Integration.Tests"
   - flake8
 after_success:
   - codecov

@@ -15,20 +15,20 @@ FakeArgs = namedtuple("FakeCLIArgs", ["output", "configurator", "input", "config
 
 class Tests(unittest.TestCase):
     def test_no_args(self):
-        args = FakeArgs(fake_output(), "none", None, None, None)
+        args = FakeArgs(fake_output(), None, None, None, None)
         with self.assertRaises(BaseException):
             get_tool_from_args(args)
 
     def test_dc_confnone_mocknone(self):
-        args = FakeArgs(fake_output(), "none", dc_dir + "/docker-compose.yml", None, None)
+        args = FakeArgs(fake_output(), None, dc_dir + "/docker-compose.yml", None, None)
         tool = get_tool_from_args(args)
         tool.run()
         assert_files_equal(exp_dir + "/dc_confnone.yaml",
                            args.output + "/docker-compose-virtual.yaml")
 
     def test_dc_conffile(self):
-        args = FakeArgs(fake_output(), "file", dc_dir + "/docker-compose.yml", conf_dir + "/configfile.yaml", None)
+        args = FakeArgs(fake_output(), "file", dc_dir + "/docker-compose.yml", conf_dir + "/usecase_conffile.yaml", None)
         tool = get_tool_from_args(args)
         tool.run()
-        assert_files_equal(exp_dir + "/dc_confnone.yaml",
+        assert_files_equal(exp_dir + "/dc_conffile.yaml",
                            args.output + "/docker-compose-virtual.yaml")

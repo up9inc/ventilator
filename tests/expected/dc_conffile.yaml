@@ -1,0 +1,20 @@
+services:
+  catalogue:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    command: /config/mockintosh.yml
+    hostname: catalogue
+    image: up9inc/mockintosh:latest
+    read_only: true
+    volumes:
+    - .:/config
+  front-end:
+    cap_drop:
+    - all
+    hostname: front-end
+    image: weaveworksdemos/front-end:0.3.12
+    read_only: true
+    restart: always
+version: '3'
