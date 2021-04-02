@@ -48,12 +48,11 @@ class Tests(unittest.TestCase):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile-broken-action.yaml')
         self.assertRaises(InvalidConfigfileDefinitionAction, tool.run)
-        
+
     def test_k8s(self):
         tool = Tool()
         tool.set_k8s_configurator(None, configfile_path=conf_dir + "/configfile.yaml")
         tool.run()
-
 
     def test_configfile_default_action(self):
         tool_keep = Tool()
@@ -69,20 +68,17 @@ class Tests(unittest.TestCase):
                                       configfile_path=conf_dir + "/configfile-default-action-drop.yaml")
         tool_drop.run()
 
-
     def test_configfile_default_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml",
                                  configfile_path=conf_dir + "/configfile-default-action-not-supported.yaml")
         self.assertRaises(ActionNotSupported, tool.run)
 
-
     def test_configfile_action_not_supported(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml",
                                  configfile_path=conf_dir + "/configfile-action-not-supported.yaml")
         self.assertRaises(ActionNotSupported, tool.run)
-
 
     def test_empty_input_file(self):
         tool = Tool()
