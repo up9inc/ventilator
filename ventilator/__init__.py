@@ -7,7 +7,7 @@ from os import path
 
 import yaml
 
-from ventilator.adapter import Adapter, EmptyAdapter, K8SInput, DCInput
+from ventilator.adapter import EmptyAdapter, K8SInput, DCInput
 from ventilator.configurator import Configurator
 from ventilator.constants import OUTPUT_DC_FILENAME
 from ventilator.mock import EmptyMock, EmptyMockintoshMock, Mock
@@ -107,6 +107,8 @@ def initiate():
 
 
 def get_tool_from_args(args):
+    if (args.input == None or len(args.input) == 0):
+        raise BaseException('No default input or ')
     tool = Tool()
     tool.output = args.output if args.output else os.getcwd()
     if args.configurator is None:
