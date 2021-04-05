@@ -1,0 +1,16 @@
+{
+ "id": "510a0d7e-8e83-4193-b483-e27e09ddc34d",
+ "name": "SuperSport XL",
+ "description": "Ready for action. Engineers: be ready to smash that next bug! Be ready, with these super-action-sport-masterpieces. This particular engineer was chased away from the office with a stick.",
+ "imageUrl": [
+  "/catalogue/images/puma_1.jpeg",
+  "/catalogue/images/puma_2.jpeg"
+ ],
+ "price": 15,
+ "count": 820,
+ "tag": [
+  "sport",
+  "black",
+  "formal"
+ ]
+}
