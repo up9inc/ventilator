@@ -6,7 +6,7 @@ import os
 from os import path
 from pathlib import Path
 
-from shutil import copyfile
+from shutil import copyfile, SameFileError
 
 import yaml
 
@@ -80,16 +80,19 @@ class Tool:
         if isinstance(self.adapter.mock, EmptyMock) or self.adapter.mock is None:
             return
         for file_to_be_copied in self.adapter.mock.file_list:
-            file_path = self.output + file_to_be_copied
-            file_directory = str(Path().absolute()) + '/' + '/'.join(
-                file_path.split('/')[0:len(file_path.split('/')) - 1])
+            file_path = path.join(self.output, file_to_be_copied)
+            file_directory = path.join(str(Path().absolute()), '/'.join(
+                file_path.split('/')[0:len(file_path.split('/')) - 1]))
             try:
                 Path(file_directory).mkdir(parents=True)
+                copyfile(file_to_be_copied, file_path)
+                logging.info(f"{file_path} Created.")
             except FileExistsError:
                 pass
-            print(file_to_be_copied)
-            copyfile(file_to_be_copied, file_path)
-            logging.info(f"{file_path} Created.")
+            except FileNotFoundError:
+                pass
+            except SameFileError:
+                pass
 
     def _write_output(self):
         file_path = self.output + '/{}'.format(OUTPUT_DC_FILENAME)

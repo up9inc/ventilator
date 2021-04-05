@@ -1,7 +1,6 @@
 import logging
 import os
 import unittest
-
 from tests.util import fake_output, dc_dir, conf_dir
 from ventilator import Tool, K8SInput, parse_cli_args, get_tool_from_args
 from ventilator.exceptions import ActionNotSupported, DockerComposeNotInAGoodFormat

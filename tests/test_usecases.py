@@ -27,7 +27,8 @@ class Tests(unittest.TestCase):
                            args.output + "/docker-compose-virtual.yaml")
 
     def test_dc_conffile(self):
-        args = FakeArgs(fake_output(), "file", dc_dir + "/docker-compose.yml", conf_dir + "/usecase_conffile.yaml", None)
+        args = FakeArgs(fake_output(), "file", dc_dir + "/docker-compose.yml", conf_dir + "/usecase_conffile.yaml",
+                        None)
         tool = get_tool_from_args(args)
         tool.run()
         assert_files_equal(exp_dir + "/dc_conffile.yaml",
