@@ -2,8 +2,8 @@ import logging
 import os
 import unittest
 
-from tests.util import dc_dir, conf_dir
-from ventilator import Tool, K8SInput
+from tests.util import fake_output, dc_dir, conf_dir
+from ventilator import Tool, K8SInput, parse_cli_args, get_tool_from_args
 from ventilator.exceptions import ActionNotSupported, DockerComposeNotInAGoodFormat
 from ventilator.exceptions import InvalidConfigfileDefinition, InvalidConfigfileDefinitionAction
 
@@ -32,11 +32,30 @@ class Tests(unittest.TestCase):
 
     def test_empty_adapter(self):
         tool = Tool()
+        tool.adapter = None
+        tool.input = dc_dir + '/docker-compose.yml'
+        tool.run()
+    
+    def test_single_run(self):
+        args = parse_cli_args().parse_args([
+            '--input', dc_dir + '/docker-compose.yml',
+            '--output', fake_output(),
+            '--configurator', 'file',
+            '--configurator_file', conf_dir + '/configfile.yaml',
+            '--mock_source_file', conf_dir + '/../mockintosh/mockintosh.yml'
+        ])
+        tool = get_tool_from_args(args)
         tool.run()
 
-    def test_example(self):
+    def test_dc_empty_mock_source(self):
         tool = Tool()
         tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile.yaml')
+        tool.run()
+
+    def test_dc_mock_source(self):
+        tool = Tool()
+        tool.set_dc_configurator(dc_dir + "/docker-compose.yml", conf_dir + '/configfile.yaml')
+        tool.mock_source = dc_dir + '/../mockintosh/mockintosh.yml'
         tool.run()
 
     def test_example_broken_configfile(self):

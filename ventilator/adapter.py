@@ -40,11 +40,8 @@ class EmptyAdapter(Adapter):
 
     def input(self):
         logging.info("Reading the file: %s", self.fname)
-        try:
-            with open(self.fname, 'r') as fp:
-                self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
-        except yaml.scanner.ScannerError:
-            raise
+        with open(self.fname, 'r') as fp:
+            self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
 
     def output(self):
         return yaml.dump(self.file_content)

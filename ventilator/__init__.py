@@ -79,7 +79,7 @@ class Tool:
             logging.info(f"Created {self.adapter.type} file in: %s", file_path)
 
 
-def initiate():
+def parse_cli_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--configurator",
@@ -92,8 +92,12 @@ def initiate():
                         default="", action='store')
     parser.add_argument("-mf", "--mock_source_file", help="Mock Source File", action='store', default=None)
     parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
-    args = parser.parse_args()
+    return parser
 
+def initiate():
+
+    args = parse_cli_args().parse_args()
+    
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format='[%(asctime)s %(name)s %(levelname)s] %(message)s')
     logging.debug('DEBUG enabled')
