@@ -1,0 +1,5 @@
+services:
+- name: catalogue
+  port: 8000
+management:
+  port: 8080
