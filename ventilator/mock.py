@@ -73,8 +73,30 @@ class Mock:
         super().__init__()
         self.file_path = file_path
         self.file_content = None
+        self.file_list = []
         self.file_content_loaded = None
         self._identify_mock_source()
+        self._check_dependency_files()
+
+    def _find_files(self, service):
+        stack = list(service.items())
+        visited = set()
+        while stack:
+            k, v = stack.pop()
+            if isinstance(v, dict):
+                if k not in visited:
+                    stack.extend(v.items())
+            else:
+                if not isinstance(v, bool) and not isinstance(v, int) and '@' in v:
+                    self.file_list.append(v.strip('@'))
+                if isinstance(v, list):
+                    for vi in v:
+                        self._find_files(vi)
+            visited.add(k)
+
+    def _check_dependency_files(self):
+        for service in self.file_content_loaded['services']:
+            self._find_files(service)
 
     def _identify_mock_source(self):
         try:

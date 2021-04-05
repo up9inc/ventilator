@@ -11,6 +11,7 @@ logging = logging.getLogger(__name__)
 
 
 class Adapter:
+    mock = None
 
     @abstractmethod
     def input(self):
