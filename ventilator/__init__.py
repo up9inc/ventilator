@@ -94,10 +94,10 @@ def parse_cli_args():
     parser.add_argument('-v', '--verbose', help="Logging in DEBUG level", action='store_true')
     return parser
 
-def initiate():
 
+def initiate():
     args = parse_cli_args().parse_args()
-    
+
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format='[%(asctime)s %(name)s %(levelname)s] %(message)s')
     logging.debug('DEBUG enabled')

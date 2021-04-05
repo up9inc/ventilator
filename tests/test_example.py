@@ -35,7 +35,7 @@ class Tests(unittest.TestCase):
         tool.adapter = None
         tool.input = dc_dir + '/docker-compose.yml'
         tool.run()
-    
+
     def test_single_run(self):
         args = parse_cli_args().parse_args([
             '--input', dc_dir + '/docker-compose.yml',
