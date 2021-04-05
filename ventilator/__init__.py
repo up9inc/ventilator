@@ -107,7 +107,7 @@ def initiate():
 
 
 def get_tool_from_args(args):
-    if (args.input == None or len(args.input) == 0):
+    if args.input is None or len(args.input) == 0:
         raise BaseException('No default input or ')
     tool = Tool()
     tool.output = args.output if args.output else os.getcwd()
