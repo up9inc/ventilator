@@ -1,5 +1,4 @@
 output/
-tests/mockintosh/mockintosh.yml
 mockintosh.yml
 target_services_mocks.json
 mock-data
