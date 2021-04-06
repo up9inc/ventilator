@@ -79,18 +79,19 @@ class Tool:
     def _copy_dependency_files(self):
         if isinstance(self.adapter.mock, EmptyMock) or self.adapter.mock is None:
             return
+        logging.info(self.adapter.mock.file_list)
         for file_to_be_copied in self.adapter.mock.file_list:
             file_path = path.join(self.output, file_to_be_copied)
+            logging.info(file_path)
             file_directory = path.join(str(Path().absolute()), '/'.join(
                 file_path.split('/')[0:len(file_path.split('/')) - 1]))
             try:
                 Path(file_directory).mkdir(parents=True)
-                copyfile(file_to_be_copied, file_path)
-                logging.info(f"{file_path} Created.")
             except FileExistsError:
                 pass
-            except FileNotFoundError:
-                pass
+            try:
+                copyfile(file_to_be_copied, file_path)
+                logging.info(f"{file_path} Created.")
             except SameFileError:
                 pass
 
