@@ -15,15 +15,15 @@ services:
     port: 8002
     ssl: false
     managementRoot: __admin
-    oas: '@mock-data/up9-http___catalogue.sock-shop-spec.json'
+    oas: '@tests/mock-data/up9-http___catalogue.sock-shop-spec.json'
     endpoints:
       - path: /catalogue
         response:
           headers:
             Content-Type: application/json
-          body: '@mock-data/resp_1.json'
+          body: '@tests/mock-data/resp_1.json'
       - path: /catalogue/{{id}}
         response:
           headers:
             Content-Type: application/json
-          body: '@mock-data/resp_2.json'
+          body: '@tests/mock-data/resp_2.json'
