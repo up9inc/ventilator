@@ -46,7 +46,6 @@ class EmptyAdapter(Adapter):
 
     def output(self):
         logging.info("No configuration passed")
-        logging.info("Created file in: ")
         return yaml.dump(self.file_content, sort_keys=False)
 
     def validate_input(self):
@@ -91,7 +90,6 @@ class DCInput(Adapter):
     def configure(self):
         self.validate_input()
         self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
-        print(self.mock)
         self.configured_default_action = self.configure_services['default-action'] \
             if 'default-action' in self.configure_services else self.configured_default_action
         if self.configured_default_action not in ['keep', 'mock', 'drop']:
@@ -139,7 +137,6 @@ class DCInput(Adapter):
             self.content_configured[service_name]['environment'] = \
                 [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(service_value['ports'][0]))]
         if 'port' in mock_service:
-            print(mock_service)
             # self.content_configured[service_name]['ports'] = [mock_service['port']]
             self.content_configured[service_name]['environment'] = \
                 [MOCKINTOSH_SERVICE['environment'][0].replace('80', str(mock_service['port']))]
