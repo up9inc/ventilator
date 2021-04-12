@@ -12,7 +12,7 @@ management:
   port: 8000
 services:
   - name: http://catalogue.sock-shop
-    port: 8002
+    port: 80
     ssl: false
     managementRoot: __admin
     oas: '@tests/mock-data/up9-http___catalogue.sock-shop-spec.json'

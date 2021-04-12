@@ -99,7 +99,9 @@ class Tool:
         file_path = self.output + '/{}'.format(OUTPUT_DC_FILENAME)
         with open(file_path, 'w') as fp:
             fp.write(self.adapter.output())
-            logging.info(f"Created {self.adapter.type} file in: %s", file_path)
+            logging.info(
+                f"Created {self.adapter.type + ' file' if self.adapter.type != 'empty' else 'same file, because no configuration was passed,'} in: %s",
+                file_path)
 
 
 def parse_cli_args():
