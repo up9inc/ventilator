@@ -77,7 +77,6 @@ class K8SInput(Adapter):
         if self.configured_default_action not in ['keep', 'mock', 'drop']:
             raise ActionNotSupported(self.configured_default_action)
         self.services = list(self.configured_services['services'].keys())
-        [logging.info(svc) for svc in [x.split('.') for x in list(self.configured_services['services'].keys())]]
 
         services = [{'name': svc[0], 'namespace': svc[1]} for svc in [x.split('.') for x in list(self.configured_services['services'].keys())]]
         for service in services:
