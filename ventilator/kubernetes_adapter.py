@@ -3,6 +3,7 @@ import re
 import yaml
 
 from kubernetes import client, config
+from kubernetes.config.config_exception import ConfigException
 from kubernetes.client.models.v1_deployment import V1Deployment
 from kubernetes.client.models.v1_deployment_list import V1DeploymentList
 from kubernetes.client.models.v1_service import V1Service
@@ -19,14 +20,17 @@ except ImportError:
     from collections import Mapping
 
 
+logging = logging.getLogger(__name__)
+
 yaml.Dumper.ignore_aliases = lambda *args: True
 
-config.load_kube_config()
+try:
+    config.load_kube_config()
 
-core_api_instance = client.CoreV1Api()
-api_instance = client.AppsV1Api()
-
-logging = logging.getLogger(__name__)
+    core_api_instance = client.CoreV1Api()
+    api_instance = client.AppsV1Api()
+except ConfigException as error:
+    logging.info(error)
 
 
 class K8SInput(Adapter):
