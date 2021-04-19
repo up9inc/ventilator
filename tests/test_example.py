@@ -69,8 +69,7 @@ class Tests(unittest.TestCase):
 
     def test_k8s(self):
         tool = Tool()
-        tool.set_k8s_configurator(None, configfile_path=conf_dir + "/configfile.yaml")
-        tool.run()
+        self.assertRaises(AttributeError, tool.set_k8s_configurator)
 
     def test_configfile_default_action(self):
         tool_keep = Tool()

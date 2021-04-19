@@ -22,52 +22,62 @@ class EmptyMockintoshMock(EmptyMock):
         super().__init__()
         self.default_action = 'keep'
         self.configfile_content_loaded = None
-        self.mockintosh_data = {'services': None}
+        self.mockintosh_data = {'management': {'port': 8000}, 'services': []}
         logging.info("Using empty mockintosh mock")
 
     def mock(self, adapter_type, configfile_content, services, output):
+        FILEPATH_OUTPUT = output + '/mockintosh.yml'
         if adapter_type == 'docker-compose':
-            self._mock_dc(configfile_content, services, output)
-
-    def _mock_dc(self, configfile_content, services, output):
-        if services is None or len(services) == 0 or services['services'] is None:
-            raise DockerComposeNotInAGoodFormat()
+            if services is None or len(services) == 0 or services['services'] is None:
+                raise DockerComposeNotInAGoodFormat()
+        elif adapter_type == 'kubernetes':
+            FILEPATH_OUTPUT = output + '/configmap-mockintosh.yml'
 
         self.configfile_content_loaded = yaml.load(configfile_content, Loader=yaml.Loader)
         self.default_action = self.configfile_content_loaded.get('default-action',
                                                                  self.default_action)
-        self.mockintosh_data['services'] = []
         current_port = 80
         if self.default_action == 'mock':
-            for service_name, service_value in services['services'].items():
+            for service_name in self.configfile_content_loaded['services'].keys():
                 if service_name in self.configfile_content_loaded['services']:
                     if self.configfile_content_loaded['services'][service_name] is not None:
                         configfile_service_action = self.configfile_content_loaded['services'][service_name][
                             'action']
                         if configfile_service_action == 'mock':
                             self._mock_service(service_name, current_port)
-                            current_port += 1
                 else:
                     self._mock_service(service_name, current_port)
-                    current_port += 1
         else:
-            for service_name, service_value in services['services'].items():
+            for service_name in self.configfile_content_loaded['services'].keys():
                 if service_name in self.configfile_content_loaded['services'] \
                         and self.configfile_content_loaded['services'][service_name]['action'] == 'mock':
                     self._mock_service(service_name, current_port)
-                    current_port += 1
-        with open(output + '/mockintosh.yml', 'w') as fp:
+        with open(FILEPATH_OUTPUT, 'w') as fp:
+            if adapter_type == 'kubernetes':
+                configmap = {
+                    'apiVersion': 'v1',
+                    'kind': 'ConfigMap',
+                    'metadata': {
+                        'name': 'mockintosh-config-file'
+                    },
+                    'data': {'mockintosh.yml': {}}
+                }
+                configmap['data']['mockintosh.yml'] = yaml.dump(self.mockintosh_data, sort_keys=False)
+                self.mockintosh_data = configmap
+
+                def str_presenter(dumper, data):
+                    if len(data.splitlines()) > 1:  # check for multiline string
+                        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+                    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+                yaml.add_representer(str, str_presenter)
+
             yaml.dump(self.mockintosh_data, fp, sort_keys=False)
-            logging.info("Created mockintosh config file in: %s/%s", output, 'mockintosh.yml')
-        return None
+            logging.info("Created mockintosh config file in: %s", FILEPATH_OUTPUT)
 
     def _mock_service(self, service_name, current_port) -> None:
         self.mockintosh_data['services'].append({
             'name': service_name,
-            'port': current_port,
-            'environment': [
-                'MOCKINTOSH_FORCE_PORT=' + str(current_port)
-            ]
+            'port': current_port
         })
 
 

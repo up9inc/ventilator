@@ -1,16 +1,17 @@
 import logging
 import re
-from ventilator.constants import OUTPUT_K8S_DEPLOYMENT_FILENAME
+import yaml
 
 from kubernetes import client, config
 from kubernetes.client.models.v1_deployment import V1Deployment
 from kubernetes.client.models.v1_deployment_list import V1DeploymentList
-from ventilator.exceptions import ActionNotSupported
-
-import yaml
+from kubernetes.client.models.v1_service import V1Service
+from kubernetes.client.models.v1_service_list import V1ServiceList
 
 from ventilator.adapter import Adapter
 from ventilator.configurator import ConfigFileConfigurator
+from ventilator.constants import OUTPUT_K8S_DEPLOYMENT_FILENAME
+from ventilator.exceptions import ActionNotSupported
 
 try:
     from collections.abc import Mapping
@@ -40,18 +41,29 @@ class K8SInput(Adapter):
         self.configurator.configure()
         self.configured_default_action = 'keep'
         self.deployment_list = {}
+        self.services_prepared = {}
 
     def input(self):
         pass
 
     def output(self, output):
-        data = camelize(self.deployment_list.to_dict())
-        data = clean_null(data)
+        deployments = camelize(self.deployment_list.to_dict())
+        deployments = clean_null_terms_deployment(deployments)
         file_path = "{}/{}".format(output, OUTPUT_K8S_DEPLOYMENT_FILENAME)
         with open(file_path, 'w') as fp:
-            fp.write(yaml.dump(data))
+            fp.write(yaml.dump(deployments, sort_keys=False))
             logging.info(
-                f"Created {self.type} file in: %s",
+                f"Created {self.type} deployments file in: %s",
+                file_path)
+
+        services = camelize(self.services_prepared.to_dict())
+        services = clean_null_terms_services(services)
+        # services = clean_null_terms(services['spec'])
+        file_path = "{}/{}".format(output, 'services-mock.yaml')
+        with open(file_path, 'w') as fp:
+            fp.write(yaml.dump(services, sort_keys=False))
+            logging.info(
+                f"Created {self.type} services file in: %s",
                 file_path)
 
     def configure(self):
@@ -60,6 +72,7 @@ class K8SInput(Adapter):
             if 'default-action' in self.configured_services else self.configured_default_action
         if self.configured_default_action not in ['keep', 'mock', 'drop']:
             raise ActionNotSupported(self.configured_default_action)
+        self.services = list(self.configured_services['services'].keys())
         services = [{'name': svc[0], 'namespace': svc[1]} for svc in [x.split('.') for x in list(self.configured_services['services'].keys())]]
         for service in services:
             try:
@@ -77,6 +90,36 @@ class K8SInput(Adapter):
         self.prepare_output()
 
     def prepare_output(self):
+        self._prepare_deployments()
+        self._prepare_services()
+
+    def _prepare_services(self):
+        service_list = {
+            'api_version': 'v1',
+            'kind': 'List',
+            'items': []
+        }
+        for service in self.services:
+            namespace = service.split('.')[1]
+            name = service.split('.')[0]
+
+            if 'action' in self.configured_services['services'][service]:
+                if self.configured_services['services'][service]['action'] == 'drop':
+                    break
+            else:
+                if self.configured_default_action == 'drop':
+                    break
+
+            service_object = core_api_instance.read_namespaced_service(name=name, namespace=namespace)
+            service_dict = self._path_metadata(clean_null_terms(service_object.to_dict()))
+            service_dict['spec'].pop('cluster_ip', None)
+            service_dict.pop('status', None)
+            service_list['items'].append(
+                V1Service(
+                    api_version='v1', kind='Service', metadata=service_dict['metadata'], spec=service_dict['spec']))
+        self.services_prepared = V1ServiceList(api_version='v1', kind='List', items=service_list['items'])
+
+    def _prepare_deployments(self):
         deployment_list = {
             'api_version': 'v1',
             'kind': 'List',
@@ -111,18 +154,21 @@ class K8SInput(Adapter):
                     status={}
                 )
             )
-
         self.deployment_list = V1DeploymentList(api_version='v1', kind='List', items=deployment_list['items'])
+
+    def _path_metadata(self, resource):
+        resource['metadata']['annotations'].pop('kubectl.kubernetes.io/last-applied-configuration', None)
+        resource['metadata']['annotations'].pop('deployment.kubernetes.io/revision', None)
+        resource['metadata']['resource_version'] = None
+        resource['metadata']['self_link'] = None
+        resource['metadata']['uid'] = None
+        resource['metadata']['managed_fields'] = None
+        resource['metadata']['creation_timestamp'] = None
+        return resource
 
     def _patch_deployment(self, deployment, action):
         if action == 'keep':
-            del deployment['metadata']['annotations']['kubectl.kubernetes.io/last-applied-configuration']
-            del deployment['metadata']['annotations']['deployment.kubernetes.io/revision']
-            deployment['metadata']['resource_version'] = None
-            deployment['metadata']['self_link'] = None
-            deployment['metadata']['uid'] = None
-            deployment['metadata']['managed_fields'] = None
-            deployment['metadata']['creation_timestamp'] = None
+            deployment = self._path_metadata(deployment)
             return deployment
 
         name = deployment['metadata']['name']
@@ -230,7 +276,7 @@ def clean_null_terms(d):
     return clean
 
 
-def clean_null(data):
+def clean_null_terms_deployment(data):
     for idx, d in enumerate(data['items']):
         data['items'][idx] = clean_null_terms(data['items'][idx])
         containers = data['items'][idx]['spec']['template']['spec']['containers']
@@ -242,4 +288,11 @@ def clean_null(data):
             for volume_idx, volume in enumerate(volumes):
                 volumes[volume_idx] = clean_null_terms(volumes[volume_idx])
             data['items'][idx]['spec']['template']['spec']['volumes'] = volumes
+    return data
+
+
+def clean_null_terms_services(data):
+    for idx, d in enumerate(data['items']):
+        data['items'][idx] = clean_null_terms(data['items'][idx])
+        data['items'][idx]['spec'] = clean_null_terms(data['items'][idx]['spec'])
     return data

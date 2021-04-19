@@ -47,7 +47,12 @@ class EmptyAdapter(Adapter):
 
     def output(self, output):
         logging.info("No configuration passed")
-        return yaml.dump(self.file_content, sort_keys=False)
+        file_path = output + '/{}'.format(OUTPUT_DC_FILENAME)
+        with open(file_path, 'w') as fp:
+            fp.write(yaml.dump(self.file_content, sort_keys=False))
+            logging.info(
+                f"Created {self.type} file in: %s",
+                file_path)
 
     def validate_input(self):
         pass

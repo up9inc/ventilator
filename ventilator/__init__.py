@@ -78,7 +78,6 @@ class Tool:
     def _copy_dependency_files(self):
         if isinstance(self.adapter.mock, EmptyMock) or self.adapter.mock is None:
             return
-        logging.info(self.adapter.mock.file_list)
         for file_to_be_copied in self.adapter.mock.file_list:
             file_path = path.join(self.output, file_to_be_copied)
             file_directory = path.join(str(Path().absolute()), '/'.join(

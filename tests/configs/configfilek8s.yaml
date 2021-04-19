@@ -6,5 +6,5 @@ services:
     action: 'keep'
   catalogue.sock-shop:
     action: 'mock'
-  # reviews.default:
-  #   action: 'drop'
+  reviews.default:
+    action: 'mock'
