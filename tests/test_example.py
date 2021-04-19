@@ -77,7 +77,7 @@ class Tests(unittest.TestCase):
         ])
         tool = get_tool_from_args(args)
 
-        tool.run()
+        self.assertRaises(NameError, tool.run)
 
     def test_configfile_default_action(self):
         tool_keep = Tool()
