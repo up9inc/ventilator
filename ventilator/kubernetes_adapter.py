@@ -24,13 +24,15 @@ logging = logging.getLogger(__name__)
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
-try:
-    config.load_kube_config()
 
-    core_api_instance = client.CoreV1Api()
-    api_instance = client.AppsV1Api()
-except ConfigException as error:
-    logging.info(error)
+contexts, active_context = config.list_kube_config_contexts()
+if not contexts:
+    print("Cannot find any context in kube-config file.")
+    raise BaseException('No context found')
+config.load_kube_config()
+
+core_api_instance = client.CoreV1Api()
+api_instance = client.AppsV1Api()
 
 
 class K8SInput(Adapter):
