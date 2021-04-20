@@ -1,0 +1,10 @@
+default-action: 'drop'
+services:
+  carts.sock-shop:
+    action: 'keep'
+  front-end.sock-shop:
+    action: 'keep'
+  catalogue.sock-shop:
+    action: 'mock'
+  reviews.default:
+    action: 'mock'

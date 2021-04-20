@@ -7,6 +7,7 @@ from ventilator.constants import MOCKINTOSH_SERVICE
 from ventilator.exceptions import DockerComposeNotInAGoodFormat, ActionNotSupported
 from ventilator.exceptions import InvalidConfigfileDefinitionAction, InvalidConfigfileDefinition
 
+from ventilator.constants import OUTPUT_DC_FILENAME
 logging = logging.getLogger(__name__)
 
 
@@ -44,9 +45,14 @@ class EmptyAdapter(Adapter):
         with open(self.fname, 'r') as fp:
             self.file_content = yaml.load(fp.read(), Loader=yaml.FullLoader)
 
-    def output(self):
+    def output(self, output):
         logging.info("No configuration passed")
-        return yaml.dump(self.file_content, sort_keys=False)
+        file_path = output + '/{}'.format(OUTPUT_DC_FILENAME)
+        with open(file_path, 'w') as fp:
+            fp.write(yaml.dump(self.file_content, sort_keys=False))
+            logging.info(
+                f"Created {self.type} file in: %s",
+                file_path)
 
     def validate_input(self):
         pass
@@ -62,7 +68,7 @@ class DCInput(Adapter):
         super().__init__()
         self.fname = fname
         self.file_content = None
-        self.configure_services = None
+        self.configured_services = None
         self.content_configured = {}
         self.configured_default_action = 'keep'
         self.configurator = ConfigFileConfigurator(configfile_path)
@@ -89,17 +95,17 @@ class DCInput(Adapter):
 
     def configure(self):
         self.validate_input()
-        self.configure_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
-        self.configured_default_action = self.configure_services['default-action'] \
-            if 'default-action' in self.configure_services else self.configured_default_action
+        self.configured_services = yaml.load(self.configurator.configuration, Loader=yaml.Loader)
+        self.configured_default_action = self.configured_services['default-action'] \
+            if 'default-action' in self.configured_services else self.configured_default_action
         if self.configured_default_action not in ['keep', 'mock', 'drop']:
             raise ActionNotSupported(self.configured_default_action)
         for service_name, service_value in self.file_content['services'].items():
             try:
-                if service_name in self.configure_services['services']:
-                    action = self.configure_services['services'][service_name]['action']
+                if service_name in self.configured_services['services']:
+                    action = self.configured_services['services'][service_name]['action']
                     if action == 'mock':
-                        self.action_mock(service_name, service_value, self.configure_services['services'][service_name])
+                        self.action_mock(service_name, service_value, self.configured_services['services'][service_name])
                     elif action == 'keep':
                         self.action_keep(service_name, service_value)
                     elif action == 'drop':
@@ -115,9 +121,9 @@ class DCInput(Adapter):
 
     def default_action(self, service_name, service_value):
         if self.configured_default_action == 'mock':
-            if service_name not in self.configure_services['services']:
-                self.configure_services['services'][service_name] = {"hostname": service_name, "port": '80'}
-            self.action_mock(service_name, service_value, self.configure_services['services'][service_name])
+            if service_name not in self.configured_services['services']:
+                self.configured_services['services'][service_name] = {"hostname": service_name, "port": '80'}
+            self.action_mock(service_name, service_value, self.configured_services['services'][service_name])
         elif self.configured_default_action == 'keep':
             self.action_keep(service_name, service_value)
         elif self.configured_default_action == 'drop':
@@ -147,41 +153,22 @@ class DCInput(Adapter):
         self.content_configured[service_name]['read_only'] = MOCKINTOSH_SERVICE['read_only']
         self.content_configured[service_name]['volumes'] = MOCKINTOSH_SERVICE['volumes']
 
-    def output(self):
+    def output(self, output):
         content_configured = {
             'version': '3'
         }
         if self.mock is None:
             content_configured['services'] = self.content_configured
             self.content_configured = content_configured
-            return yaml.dump(self.content_configured, sort_keys=False)
+            data = yaml.dump(self.content_configured, sort_keys=False)
         else:
             self.content_configured = content_configured
             content_configured['services'] = self.mock.mocked_content
 
-            return yaml.dump(content_configured, sort_keys=False)
-
-
-class K8SInput(Adapter):
-    type = 'kubernetes'
-
-    def validate_input(self):
-        return
-
-    def __init__(self, fname, configfile_path):
-        super().__init__()
-        self.fname = fname
-        self.file_content = None
-        self.content_configured = {}
-        self.configurator = ConfigFileConfigurator(configfile_path)
-        self.configurator.configure()
-
-    def input(self):
-        self.validated = self.validate_input()
-        return self.validated
-
-    def output(self):
-        return 'Mock'
-
-    def configure(self):
-        return
+            data = yaml.dump(content_configured, sort_keys=False)
+        file_path = output + '/{}'.format(OUTPUT_DC_FILENAME)
+        with open(file_path, 'w') as fp:
+            fp.write(data)
+            logging.info(
+                f"Created {self.type} file in: %s",
+                file_path)

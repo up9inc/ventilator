@@ -10,9 +10,9 @@ from shutil import copyfile, SameFileError
 
 import yaml
 
-from ventilator.adapter import EmptyAdapter, K8SInput, DCInput
+from ventilator.adapter import EmptyAdapter, DCInput
+from ventilator.kubernetes_adapter import K8SInput
 from ventilator.configurator import Configurator
-from ventilator.constants import OUTPUT_DC_FILENAME
 from ventilator.mock import EmptyMock, EmptyMockintoshMock, Mock
 
 yaml.Dumper.ignore_aliases = lambda *args: True
@@ -30,9 +30,8 @@ class Tool:
         self.mock_source = None  # TODO
         self.adapter = None
 
-    def set_k8s_configurator(self, inp=None, configfile_path=None):
-        self.configfile_path = configfile_path
-        self.adapter = K8SInput(inp, configfile_path)
+    def set_k8s_configurator(self):
+        self.adapter = K8SInput(self.configurator_file)
 
     def set_dc_configurator(self, inp, configfile_path):
         self.configfile_path = configfile_path
@@ -79,10 +78,8 @@ class Tool:
     def _copy_dependency_files(self):
         if isinstance(self.adapter.mock, EmptyMock) or self.adapter.mock is None:
             return
-        logging.info(self.adapter.mock.file_list)
         for file_to_be_copied in self.adapter.mock.file_list:
             file_path = path.join(self.output, file_to_be_copied)
-            logging.info(file_path)
             file_directory = path.join(str(Path().absolute()), '/'.join(
                 file_path.split('/')[0:len(file_path.split('/')) - 1]))
             try:
@@ -96,12 +93,7 @@ class Tool:
                 pass
 
     def _write_output(self):
-        file_path = self.output + '/{}'.format(OUTPUT_DC_FILENAME)
-        with open(file_path, 'w') as fp:
-            fp.write(self.adapter.output())
-            logging.info(
-                f"Created {self.adapter.type + ' file' if self.adapter.type != 'empty' else 'same file, because no configuration was passed,'} in: %s",
-                file_path)
+        self.adapter.output(self.output)
 
 
 def parse_cli_args():
@@ -152,7 +144,11 @@ def get_tool_from_args(args):
     else:
         if args.configurator_file is None:
             raise BaseException('On FILE configurator it is required -f <path_of_the_configuration_file>')
+        tool.configurator_file = args.configurator_file
         if args.mock_source_file != 'none':
             tool.mock_source = args.mock_source_file
-        tool.set_dc_configurator(args.input, args.configurator_file)
+        if args.input == 'k8s':
+            tool.set_k8s_configurator()
+        else:
+            tool.set_dc_configurator(args.input, args.configurator_file)
     return tool

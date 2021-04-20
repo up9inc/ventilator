@@ -68,8 +68,13 @@ class Tests(unittest.TestCase):
         self.assertRaises(InvalidConfigfileDefinitionAction, tool.run)
 
     def test_k8s(self):
-        tool = Tool()
-        tool.set_k8s_configurator(None, configfile_path=conf_dir + "/configfile.yaml")
+        args = parse_cli_args().parse_args([
+            '--input', 'k8s',
+            '--output', fake_output(),
+            '--configurator', 'file',
+            '--configurator_file', conf_dir + '/configfilek8s.yaml'
+        ])
+        tool = get_tool_from_args(args)
         tool.run()
 
     def test_configfile_default_action(self):
