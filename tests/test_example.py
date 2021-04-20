@@ -72,12 +72,10 @@ class Tests(unittest.TestCase):
             '--input', 'k8s',
             '--output', fake_output(),
             '--configurator', 'file',
-            '--configurator_file', conf_dir + '/configfilek8s.yaml',
-            '--mock_source_file', conf_dir + '/../mockintosh/mockintosh.yml'
+            '--configurator_file', conf_dir + '/configfilek8s.yaml'
         ])
         tool = get_tool_from_args(args)
-
-        self.assertRaises(NameError, tool.run)
+        tool.run()
 
     def test_configfile_default_action(self):
         tool_keep = Tool()
